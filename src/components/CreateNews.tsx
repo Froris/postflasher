@@ -10,12 +10,15 @@ import {
 } from '@mui/material';
 import { SyntheticEvent, useCallback, useEffect, useState } from 'react';
 import { publishToFacebook } from '../api/facebookApi';
-import {
-  AuthResponse,
-  FbApiPageAccessResponse,
-  StatusResponse,
-} from '../api/types';
+import { FbApiPageAccessResponse, StatusResponse } from '../api/types';
 import { ColorRing } from 'react-loader-spinner';
+import { createNews } from '../api/telegrafApi';
+import { useSnackbar } from 'notistack';
+
+interface INotification {
+  message: string;
+  variant: 'error' | 'warning' | 'success';
+}
 
 interface CreateNewsProps {
   isFbSDKInitialized: boolean;
@@ -26,6 +29,8 @@ const pageId = import.meta.env.VITE_FB_PAGE_ID as string;
 // TODO: вынести логику логина/логаута в отдельный компонент с кнопкой
 // TODO: вынести функционал авторизации в отдельный класс в facebookApi
 export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
+  const { enqueueSnackbar } = useSnackbar();
+
   const [isUserConnected, setIsUserConnected] = useState(true);
   const [accessTokens, setAccessTokens] = useState<{
     userToken: string | undefined;
@@ -34,8 +39,6 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
     userToken: undefined,
     pageToken: undefined,
   });
-  //const [fbUserAccessToken, setFbUserAccessToken] = useState<null | string>();
-  //const [fbPageAccessToken, setFbPageAccessToken] = useState<null | string>();
 
   const [userId, setUserId] = useState<undefined | string>(undefined);
   const [title, setTitle] = useState('');
@@ -47,15 +50,35 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
 
   const [isPublishing, setIsPublishing] = useState(false);
 
+  console.log('re-rendered');
+
+  function createNotification({ message, variant }: INotification) {
+    enqueueSnackbar(message, {
+      variant,
+      anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+    });
+  }
+
   // Logs in a Facebook user
   const logInToFB = useCallback(() => {
-    window.FB.login((response: StatusResponse) => {
-      //setFbUserAccessToken(response.authResponse.accessToken);
-      setAccessTokens((prev) => ({
-        ...prev,
-        userToken: response.authResponse.accessToken,
-      }));
-    });
+    window.FB.login(
+      (response: StatusResponse) => {
+        if (response && response.authResponse) {
+          const accessTokens = {
+            userToken: response.authResponse.accessToken,
+            pageToken: undefined,
+          };
+
+          setAccessTokens(accessTokens);
+        }
+      },
+      {
+        // Test config
+        config_id: '125981323709492',
+        // Prod config
+        //config_id: '242965031558610',
+      }
+    );
   }, []);
 
   // Logs out the current Facebook user
@@ -66,13 +89,17 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
         pageToken: undefined,
       };
       setAccessTokens(tokens);
+      setIsUserConnected(false);
     });
   }, []);
 
   function submitHandler(): void {
     // Проверяем, что была введена ссылка на картинку
     if (!imageUrl) {
-      alert('Please enter an image URL');
+      createNotification({
+        message: 'Please enter an image URL',
+        variant: 'warning',
+      });
       return;
     }
 
@@ -80,19 +107,17 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
       setIsPublishing(true);
 
       if (isTgChecked) {
-        // Отправляем картинку и текст в telegram
-        //createNews(title, text, imageUrl)
-        //  .then(() => {
-        //    alert('News created successfully');
-        //  })
-        //  .catch((error) => {
-        //    console.error(error);
-        //    alert('Error creating news');
-        //  });
+        createNews(title, text, imageUrl)
+          .then((result) => {
+            createNotification({ message: result, variant: 'success' });
+          })
+          .catch((error: string) => {
+            createNotification({ message: error, variant: 'error' });
+          });
       }
 
       if (isFbChecked && accessTokens.userToken && accessTokens.pageToken) {
-        const response = await publishToFacebook(
+        await publishToFacebook(
           pageId,
           accessTokens.pageToken,
           imageUrl,
@@ -100,24 +125,33 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
           text
         )
           .then((response) => {
-            alert(response);
+            createNotification({ message: response, variant: 'success' });
           })
-          .catch((err) =>
-            console.warn('Error! Failed to post to Facebook. ', err)
-          );
+          .catch((err) => {
+            console.error('Error! Failed to post to Facebook. ', err);
 
-        console.log('response of publishToFacebook');
+            createNotification({
+              message: 'Error! Failed to post to Facebook.',
+              variant: 'success',
+            });
+          });
       } else {
-        alert('You are not connected to Facbook!');
+        createNotification({
+          message: 'You are not connected to Facbook!',
+          variant: 'warning',
+        });
       }
-
-      //return Promise.all([createPost(pageId, pageAccessToken, title, text)])
-      //.then(() => 'Successfully published to Facebook!')
-      //.catch((err: string) => err);
     }
 
     startPublish()
-      .then(() => setIsPublishing(false))
+      .then(() => {
+        setIsFbChecked(false);
+        setIsTgChecked(false);
+        setTitle('');
+        setText('');
+        setImageUrl('');
+        setIsPublishing(false);
+      })
       .catch((err: string) => console.warn('Error from startPublish: ', err));
   }
 
@@ -138,6 +172,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
         } else {
           setIsUserConnected(false);
         }
+        console.log(response);
       });
     }
   }, [isFbSDKInitialized]);
@@ -149,18 +184,18 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
       window.FB.api(
         `/${userId}/accounts?access_token=${accessTokens.userToken}`,
         (response: FbApiPageAccessResponse) => {
-          setAccessTokens((prev) => ({
-            ...prev,
-            pageToken: response.data[0].access_token,
-          }));
+          if (response && response.data) {
+            setAccessTokens((prev) => ({
+              ...prev,
+              pageToken: response.data[0].access_token,
+            }));
+          }
         }
       );
     }
   }, [accessTokens.userToken, userId]);
 
-  //console.log('UserAccessToken: ', fbUserAccessToken);
-  //console.log('PageAccessToken: ', fbPageAccessToken);
-  //console.log('FBP access token: ', !!fbPageAccessToken);
+  console.log('tokens: ', accessTokens);
 
   return (
     <Box
@@ -169,6 +204,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
       alignItems={'center'}
       width={'600px'}
       height={'600px'}
+      p={3}
       sx={{
         backgroundColor: 'white',
         border: '1px solid black',
@@ -186,10 +222,10 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
           colors={['#03C988', '#B8FFF9', '#85F4FF', '#42C2FF', '#1976d2']}
         />
       ) : (
-        <Box display={'flex'} flexDirection={'column'} gap={2}>
+        <Box display={'flex'} flexDirection={'column'} gap={2} width={'100%'}>
           <TextField
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value.toUpperCase())}
             id='standard-basic'
             label='Title'
             variant='standard'
@@ -200,7 +236,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
             minRows={6}
             placeholder='News text...'
             onChange={(e) => setText(e.target.value)}
-            style={{ width: '400px' }}
+            style={{ width: '100%' }}
           />
 
           <TextField
@@ -217,8 +253,12 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
             </Typography>
             <FormGroup>
               <FormControlLabel
-                control={<Checkbox defaultChecked />}
+                control={<Checkbox />}
                 label='Telegram'
+                checked={isTgChecked}
+                onChange={(e: SyntheticEvent, checked: boolean) => {
+                  setIsTgChecked(checked);
+                }}
               />
               <Box>
                 <FormControlLabel
@@ -241,6 +281,12 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
               </Box>
             </FormGroup>
           </Box>
+          <Button type='submit' onClick={logInToFB}>
+            log in
+          </Button>
+          <Button type='submit' onClick={logOutOfFB}>
+            log out
+          </Button>
           <Button type='submit' onClick={submitHandler}>
             CREATE
           </Button>

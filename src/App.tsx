@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { AppBar, Box } from '@mui/material';
+import { Box, CssBaseline } from '@mui/material';
 import Main from './components/Main';
 import TopBar from './components/TopBar';
 import { useInitFbSDK } from './api/connectToFB';
@@ -13,7 +12,11 @@ function App() {
       <TopBar />
       <Box display={'flex'}>
         <Box
-          sx={{ minWidth: '300px', bgcolor: 'yellowgreen', height: '100vh' }}
+          sx={{
+            minWidth: '300px',
+            bgcolor: 'yellowgreen',
+            height: '100vh',
+          }}
         >
           left sidebar
         </Box>

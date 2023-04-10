@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import {
   FbApiResponse,
   FbApiErrorResponse,
   FbApiPhotoUploadResponse,
 } from './types';
-import { Title } from '@mui/icons-material';
 
 export const publishToFacebook = async (
   pageId: string,
@@ -16,12 +14,12 @@ export const publishToFacebook = async (
   let postId = '';
 
   return createPost(pageId, pageAccessToken, title, text)
-    .then((newPostId) => {
+    .then<string>((newPostId) => {
       postId = newPostId;
       return uploadPhoto(pageId, pageAccessToken, photo);
     })
-    .then((photoId) => updatePost(pageId, postId, photoId))
-    .catch((err: string) => err);
+    .then<string>((photoId) => updatePost(pageId, postId, photoId))
+    .catch<string>((err: string) => err);
 };
 
 async function createPost(
@@ -35,7 +33,7 @@ async function createPost(
       `/${pageId}/feed`,
       'post',
       {
-        published: false,
+        published: true,
         message: `${title}\n\n${text}`,
         access_token: pageAccessToken,
       },
@@ -79,7 +77,11 @@ async function uploadPhoto(
   });
 }
 
-async function updatePost(pageId: string, postId: string, photoId: string) {
+async function updatePost(
+  pageId: string,
+  postId: string,
+  photoId: string
+): Promise<string> {
   console.log(
     'update post: [pageId, postId, photoId]',
     pageId,

@@ -28,8 +28,17 @@ export const createNews = async (
   title: string,
   text: string,
   image: string
-): Promise<void> => {
-  await sendPhotoAsync('@testnewscaph', image, {
-    caption: `${title}\n\n${text}`,
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    sendPhotoAsync('@testnewscaph', image, {
+      caption: `${title}\n\n${text}`,
+    })
+      .then((response) => {
+        resolve('Successfully published to Telegram!');
+      })
+      .catch((err) => {
+        console.error(err);
+        reject(`Error! Failed to post to Telegram!`);
+      });
   });
 };
