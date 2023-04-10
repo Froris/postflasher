@@ -74,7 +74,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
       },
       {
         // Test config
-        config_id: '125981323709492',
+        //config_id: '125981323709492',
         // Prod config
         //config_id: '242965031558610',
       }
