@@ -14,6 +14,8 @@ import { FbApiPageAccessResponse, StatusResponse } from '../api/types';
 import { ColorRing } from 'react-loader-spinner';
 import { createNews } from '../api/telegrafApi';
 import { useSnackbar } from 'notistack';
+import { createTimeStamp, useLocalStorage, useLogin } from '../helpers';
+import { useNavigate } from 'react-router-dom';
 
 interface INotification {
   message: string;
@@ -24,14 +26,17 @@ interface CreateNewsProps {
   isFbSDKInitialized: boolean;
 }
 
-const pageId = import.meta.env.VITE_FB_PAGE_ID as string;
+const groupId = import.meta.env.VITE_FB_GROUP_ID as string;
 
 // TODO: вынести логику логина/логаута в отдельный компонент с кнопкой
 // TODO: вынести функционал авторизации в отдельный класс в facebookApi
 export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
+  const [currentUser] = useLogin();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const [posts, addPost] = useLocalStorage();
 
-  const [isUserConnected, setIsUserConnected] = useState(true);
+  const [isUserConnected, setIsUserConnected] = useState(false);
   const [accessTokens, setAccessTokens] = useState<{
     userToken: string | undefined;
     pageToken: string | undefined;
@@ -50,8 +55,6 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
 
   const [isPublishing, setIsPublishing] = useState(false);
 
-  console.log('re-rendered');
-
   function createNotification({ message, variant }: INotification) {
     enqueueSnackbar(message, {
       variant,
@@ -59,26 +62,51 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
     });
   }
 
+  function resetForm() {
+    setIsFbChecked(false);
+    setIsTgChecked(false);
+    setTitle('');
+    setText('');
+    setImageUrl('');
+    setIsPublishing(false);
+  }
+
+  async function saveToLocalStorage(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      try {
+        addPost({
+          id: posts.length,
+          author: currentUser.login,
+          text,
+          title,
+          imageUrl,
+          publishedTo: {
+            isPublishedToTG: isTgChecked,
+            isPublishedToFB: isFbChecked,
+          },
+          time: createTimeStamp(),
+        });
+        resolve('Successfully saved to DB!');
+      } catch (error) {
+        reject('Error! Failed to save to DB!');
+      }
+    });
+  }
+
   // Logs in a Facebook user
   const logInToFB = useCallback(() => {
-    window.FB.login(
-      (response: StatusResponse) => {
-        if (response && response.authResponse) {
-          const accessTokens = {
-            userToken: response.authResponse.accessToken,
-            pageToken: undefined,
-          };
+    window.FB.login((response: StatusResponse) => {
+      console.log('Log in response: ', response);
+      if (response && response.authResponse) {
+        const accessTokens = {
+          userToken: response.authResponse.accessToken,
+          pageToken: undefined,
+        };
 
-          setAccessTokens(accessTokens);
-        }
-      },
-      {
-        // Test config
-        //config_id: '125981323709492',
-        // Prod config
-        //config_id: '242965031558610',
+        setAccessTokens(accessTokens);
+        setIsUserConnected(true);
       }
-    );
+    });
   }, []);
 
   // Logs out the current Facebook user
@@ -103,6 +131,10 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
       return;
     }
 
+    if (!confirm('Publish this post?')) {
+      return;
+    }
+
     async function startPublish() {
       setIsPublishing(true);
 
@@ -116,10 +148,10 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
           });
       }
 
-      if (isFbChecked && accessTokens.userToken && accessTokens.pageToken) {
+      if (isFbChecked && accessTokens.userToken) {
         await publishToFacebook(
-          pageId,
-          accessTokens.pageToken,
+          groupId,
+          accessTokens.userToken,
           imageUrl,
           title,
           text
@@ -127,32 +159,24 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
           .then((response) => {
             createNotification({ message: response, variant: 'success' });
           })
-          .catch((err) => {
+          .catch((err: string) => {
             console.error('Error! Failed to post to Facebook. ', err);
 
             createNotification({
-              message: 'Error! Failed to post to Facebook.',
-              variant: 'success',
+              message: err,
+              variant: 'error',
             });
           });
-      } else {
-        createNotification({
-          message: 'You are not connected to Facbook!',
-          variant: 'warning',
-        });
       }
     }
 
     startPublish()
-      .then(() => {
-        setIsFbChecked(false);
-        setIsTgChecked(false);
-        setTitle('');
-        setText('');
-        setImageUrl('');
-        setIsPublishing(false);
+      .then(() => saveToLocalStorage())
+      .then((result) => {
+        createNotification({ message: result, variant: 'success' });
       })
-      .catch((err: string) => console.warn('Error from startPublish: ', err));
+      .finally(() => resetForm())
+      .catch((err) => console.error(err));
   }
 
   // Checks if the user is logged in to Facebook
@@ -162,6 +186,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
     );
     if (isFbSDKInitialized) {
       window.FB.getLoginStatus((response: StatusResponse) => {
+        console.log('GetLoginStatusresponse: ', response);
         if (response.status === 'connected') {
           setUserId(response.authResponse.userID);
 
@@ -169,33 +194,31 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
             ...prev,
             userToken: response.authResponse.accessToken,
           }));
+          setIsUserConnected(true);
         } else {
           setIsUserConnected(false);
         }
-        console.log(response);
       });
     }
   }, [isFbSDKInitialized]);
 
   // Fetches an access token for the page
-  useEffect(() => {
-    console.warn('Warning! FB getPageToken re-render! Risk of being blocked!');
-    if (userId && accessTokens.userToken) {
-      window.FB.api(
-        `/${userId}/accounts?access_token=${accessTokens.userToken}`,
-        (response: FbApiPageAccessResponse) => {
-          if (response && response.data) {
-            setAccessTokens((prev) => ({
-              ...prev,
-              pageToken: response.data[0].access_token,
-            }));
-          }
-        }
-      );
-    }
-  }, [accessTokens.userToken, userId]);
-
-  console.log('tokens: ', accessTokens);
+  //useEffect(() => {
+  //  console.warn('Warning! FB getPageToken re-render! Risk of being blocked!');
+  //  if (userId && accessTokens.userToken) {
+  //    window.FB.api(
+  //      `/${userId}/accounts?access_token=${accessTokens.userToken}`,
+  //      (response: FbApiPageAccessResponse) => {
+  //        if (response && response.data) {
+  //          setAccessTokens((prev) => ({
+  //            ...prev,
+  //            pageToken: response.data[0].access_token,
+  //          }));
+  //        }
+  //      }
+  //    );
+  //  }
+  //}, [accessTokens.userToken, userId]);
 
   return (
     <Box
@@ -268,9 +291,9 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
                   onChange={(e: SyntheticEvent, checked: boolean) => {
                     setIsFbChecked(checked);
                   }}
-                  disabled={!accessTokens.pageToken || !isUserConnected}
+                  disabled={!accessTokens.userToken || !isUserConnected}
                 />
-                {!isUserConnected && !accessTokens.pageToken ? (
+                {!isUserConnected && !accessTokens.userToken ? (
                   <Typography variant='subtitle2'>
                     You are not connected to Facebook. Please log in to your
                     Facebook admin account.
@@ -286,6 +309,9 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
           </Button>
           <Button type='submit' onClick={logOutOfFB}>
             log out
+          </Button>
+          <Button type='submit' onClick={() => navigate('/')}>
+            GO BACK
           </Button>
           <Button type='submit' onClick={submitHandler}>
             CREATE

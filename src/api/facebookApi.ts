@@ -5,45 +5,66 @@ import {
 } from './types';
 
 export const publishToFacebook = async (
-  pageId: string,
-  pageAccessToken: string,
+  groupId: string,
+  userAccessToken: string,
+  //accessTokens: {
+  //  userToken: string;
+  //  pageToken: string;
+  //},
   photo: string,
   title: string,
   text: string
 ) => {
-  let postId = '';
+  const postId = '';
 
-  return createPost(pageId, pageAccessToken, title, text)
-    .then<string>((newPostId) => {
-      postId = newPostId;
-      return uploadPhoto(pageId, pageAccessToken, photo);
-    })
-    .then<string>((photoId) => updatePost(pageId, postId, photoId))
-    .catch<string>((err: string) => err);
+  // Flow for Pages
+  //createPost(groupId, accessTokens.pageToken, title, text)
+  //.then<string>((newPostId) => {
+  //  postId = newPostId;
+  //  return uploadPhoto(groupId, accessTokens.pageToken, photo);
+  //})
+  //.then<string>((photoId) =>
+  //  updatePost(groupId, postId, accessTokens.pageToken, photoId)
+  //)
+  //.catch<string>((err: string) => {
+  //  throw new Error(err);
+  //})
+
+  return createPost(groupId, photo, userAccessToken, title, text).catch<string>(
+    (err: string) => {
+      throw new Error(err);
+    }
+  );
 };
 
 async function createPost(
-  pageId: string,
-  pageAccessToken: string,
+  groupId: string,
+  photo: string,
+  //pageAccessToken: string, For Pages
+  userAccessToken: string,
   title: string,
   text: string
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     window.FB.api(
-      `/${pageId}/feed`,
+      `/${groupId}/photos`,
       'post',
       {
+        url: photo,
         published: true,
-        message: `${title}\n\n${text}`,
-        access_token: pageAccessToken,
+        caption: `${title}\n\n${text}`,
+        access_token: userAccessToken,
+        //access_token: pageAccessToken, For Pages
       },
       function (response: FbApiResponse | FbApiErrorResponse) {
+        console.log('Response from creating post: ', response);
         if (isErrorResponse(response)) {
           console.log(response.error);
           reject(`Error! Failed to create a post. ${response.error.message}`);
           return;
         } else {
-          resolve(response.id.split('_')[1]);
+          resolve('Successfully published to Facebook!');
+          //resolve(response.id.split('_')[1]); For Pages flow
         }
       }
     );
@@ -51,25 +72,27 @@ async function createPost(
 }
 
 async function uploadPhoto(
-  pageId: string,
-  pageAccessToken: string,
+  groupId: string,
+  //pageAccessToken: string,
+  userAccessToken: string,
   photo: string
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     window.FB.api(
-      `/${pageId}/photos`,
+      `/${groupId}/photos`,
       'post',
       {
         url: photo,
         published: false,
-        access_token: pageAccessToken,
+        access_token: userAccessToken,
+        //access_token: pageAccessToken,
       },
       function (response: FbApiPhotoUploadResponse | FbApiErrorResponse) {
+        console.log('Response from uploadPhoto: ', response);
         if (isErrorResponse(response)) {
           console.log(response.error);
           reject(`Error! Failed to upload a photo. ${response.error.message}`);
         } else {
-          console.log('upload photo response: ', response);
           resolve(response.id);
         }
       }
@@ -77,39 +100,51 @@ async function uploadPhoto(
   });
 }
 
-async function updatePost(
-  pageId: string,
-  postId: string,
-  photoId: string
-): Promise<string> {
-  console.log(
-    'update post: [pageId, postId, photoId]',
-    pageId,
-    postId,
-    photoId
-  );
-  return new Promise((resolve, reject) => {
-    window.FB.api(
-      `/${pageId}_${postId}/`,
-      'post',
-      {
-        attached_media: `[{"media_fbid": ${photoId}}]`,
-      },
-      function (response: FbApiPhotoUploadResponse | FbApiErrorResponse) {
-        if (isErrorResponse(response)) {
-          console.log(response.error);
-          reject(`Error! Failed to update a post. ${response.error.message}`);
-          return;
-        } else {
-          resolve('Successfully published to Facebook!');
-        }
-      }
-    );
-  });
-}
+// For Pages only
+//async function updatePost(
+//  groupId: string,
+//  pageAccessToken: string,
+//  postId: string,
+//  photoId: string,
+//): Promise<string> {
+//  return new Promise((resolve, reject) => {
+//    window.FB.api(
+//      `/${groupId}_${postId}/`,
+//      'post',
+//      {
+//        attached_media: `[{"media_fbid": ${photoId}}]`,
+//        access_token: pageAccessToken,
+//      },
+//      function (response: FbApiPhotoUploadResponse | FbApiErrorResponse) {
+//        console.log('Response from updatePost: ', response);
+//        if (isErrorResponse(response)) {
+//          console.log(response.error);
+//          reject(`Error! Failed to update a post. ${response.error.message}`);
+//          return;
+//        } else {
+//          resolve('Successfully published to Facebook!');
+//        }
+//      }
+//    );
+//  });
+//}
 
 function isErrorResponse<RT>(
   apiResponse: RT | FbApiErrorResponse
 ): apiResponse is FbApiErrorResponse {
   return (apiResponse as FbApiErrorResponse).error !== undefined;
+}
+
+type Tokens = {
+  userToken: string;
+  pageToken: string;
+};
+export function isTokensNotUndefined(tokens: {
+  userToken: string | undefined;
+  pageToken: string | undefined;
+}): tokens is Tokens {
+  return (
+    (tokens as Tokens).userToken !== undefined &&
+    (tokens as Tokens).pageToken !== undefined
+  );
 }
