@@ -14,11 +14,7 @@ function Main() {
     if (!currentUser.login) {
       navigate('/login', { replace: true });
     }
-
-    console.log('current user from main', currentUser);
   }, [currentUser.login, navigate]);
-
-  console.log('current user from main 2', currentUser);
 
   return (
     <Box className='App' display={'flex'} flexDirection={'column'}>
@@ -35,10 +31,9 @@ function Main() {
         <Box m={2} width={'100%'}>
           <Box my={2}>
             <Button variant='contained' onClick={() => navigate('/create')}>
-              CREATE POST
+              СТВОРИТИ ПОСТ
             </Button>
           </Box>
-
           <Table />
         </Box>
       </Box>

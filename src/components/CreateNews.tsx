@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
@@ -8,34 +9,25 @@ import {
   TextareaAutosize,
   Typography,
 } from '@mui/material';
-import { SyntheticEvent, useCallback, useEffect, useState } from 'react';
-import { publishToFacebook } from '../api/facebookApi';
-import { FbApiPageAccessResponse, StatusResponse } from '../api/types';
+import { SyntheticEvent, useEffect, useState } from 'react';
+import { StatusResponse } from '../api/types';
+import { useNotification } from '../helpers';
 import { ColorRing } from 'react-loader-spinner';
-import { createNews } from '../api/telegrafApi';
-import { useSnackbar } from 'notistack';
+import { createNews } from '../api/TelegramService';
 import { createTimeStamp, useLocalStorage, useLogin } from '../helpers';
 import { useNavigate } from 'react-router-dom';
-
-interface INotification {
-  message: string;
-  variant: 'error' | 'warning' | 'success';
-}
+import FacebookApi, { FacebookGroupsApi } from '../api/FacebookService';
+import { SavedPost } from '../pages/Root';
 
 interface CreateNewsProps {
   isFbSDKInitialized: boolean;
 }
 
-const groupId = import.meta.env.VITE_FB_GROUP_ID as string;
-
-// TODO: вынести логику логина/логаута в отдельный компонент с кнопкой
-// TODO: вынести функционал авторизации в отдельный класс в facebookApi
 export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
-  const [currentUser] = useLogin();
-  const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
-  const [posts, addPost] = useLocalStorage();
-
+  // Needed for FB Pages
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [userId, setUserId] = useState<undefined | string>(undefined);
+  const [currentUser] = useLogin(); // Для указания автора
   const [isUserConnected, setIsUserConnected] = useState(false);
   const [accessTokens, setAccessTokens] = useState<{
     userToken: string | undefined;
@@ -45,148 +37,25 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
     pageToken: undefined,
   });
 
-  const [userId, setUserId] = useState<undefined | string>(undefined);
+  const createNotification = useNotification();
+  const navigate = useNavigate();
+  const [addItem, removeItem, getItem] = useLocalStorage('posts');
+
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [imageUrl, setImageUrl] = useState('');
 
   const [isFbChecked, setIsFbChecked] = useState(false);
   const [isTgChecked, setIsTgChecked] = useState(false);
-
   const [isPublishing, setIsPublishing] = useState(false);
 
-  function createNotification({ message, variant }: INotification) {
-    enqueueSnackbar(message, {
-      variant,
-      anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-    });
-  }
-
-  function resetForm() {
-    setIsFbChecked(false);
-    setIsTgChecked(false);
-    setTitle('');
-    setText('');
-    setImageUrl('');
-    setIsPublishing(false);
-  }
-
-  async function saveToLocalStorage(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      try {
-        addPost({
-          id: posts.length,
-          author: currentUser.login,
-          text,
-          title,
-          imageUrl,
-          publishedTo: {
-            isPublishedToTG: isTgChecked,
-            isPublishedToFB: isFbChecked,
-          },
-          time: createTimeStamp(),
-        });
-        resolve('Successfully saved to DB!');
-      } catch (error) {
-        reject('Error! Failed to save to DB!');
-      }
-    });
-  }
-
-  // Logs in a Facebook user
-  const logInToFB = useCallback(() => {
-    window.FB.login((response: StatusResponse) => {
-      console.log('Log in response: ', response);
-      if (response && response.authResponse) {
-        const accessTokens = {
-          userToken: response.authResponse.accessToken,
-          pageToken: undefined,
-        };
-
-        setAccessTokens(accessTokens);
-        setIsUserConnected(true);
-      }
-    });
-  }, []);
-
-  // Logs out the current Facebook user
-  const logOutOfFB = useCallback(() => {
-    window.FB.logout(() => {
-      const tokens = {
-        userToken: undefined,
-        pageToken: undefined,
-      };
-      setAccessTokens(tokens);
-      setIsUserConnected(false);
-    });
-  }, []);
-
-  function submitHandler(): void {
-    // Проверяем, что была введена ссылка на картинку
-    if (!imageUrl) {
-      createNotification({
-        message: 'Please enter an image URL',
-        variant: 'warning',
-      });
-      return;
-    }
-
-    if (!confirm('Publish this post?')) {
-      return;
-    }
-
-    async function startPublish() {
-      setIsPublishing(true);
-
-      if (isTgChecked) {
-        createNews(title, text, imageUrl)
-          .then((result) => {
-            createNotification({ message: result, variant: 'success' });
-          })
-          .catch((error: string) => {
-            createNotification({ message: error, variant: 'error' });
-          });
-      }
-
-      if (isFbChecked && accessTokens.userToken) {
-        await publishToFacebook(
-          groupId,
-          accessTokens.userToken,
-          imageUrl,
-          title,
-          text
-        )
-          .then((response) => {
-            createNotification({ message: response, variant: 'success' });
-          })
-          .catch((err: string) => {
-            console.error('Error! Failed to post to Facebook. ', err);
-
-            createNotification({
-              message: err,
-              variant: 'error',
-            });
-          });
-      }
-    }
-
-    startPublish()
-      .then(() => saveToLocalStorage())
-      .then((result) => {
-        createNotification({ message: result, variant: 'success' });
-      })
-      .finally(() => resetForm())
-      .catch((err) => console.error(err));
-  }
+  // FB API INIT
+  const fbApi = new FacebookApi('group', new FacebookGroupsApi());
 
   // Checks if the user is logged in to Facebook
   useEffect(() => {
-    console.warn(
-      'Warning! FB getLoginStatus re-render! Risk of being blocked!'
-    );
     if (isFbSDKInitialized) {
       window.FB.getLoginStatus((response: StatusResponse) => {
-        console.log('GetLoginStatusresponse: ', response);
         if (response.status === 'connected') {
           setUserId(response.authResponse.userID);
 
@@ -202,7 +71,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
     }
   }, [isFbSDKInitialized]);
 
-  // Fetches an access token for the page
+  // Fetches an access token for the FB Page (uncomment if working with Pages)
   //useEffect(() => {
   //  console.warn('Warning! FB getPageToken re-render! Risk of being blocked!');
   //  if (userId && accessTokens.userToken) {
@@ -219,6 +88,129 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
   //    );
   //  }
   //}, [accessTokens.userToken, userId]);
+
+  function resetForm() {
+    setIsFbChecked(false);
+    setIsTgChecked(false);
+    setTitle('');
+    setText('');
+    setImageUrl('');
+    setIsPublishing(false);
+  }
+
+  async function saveToLocalStorage(ids: {
+    fbPostId: string;
+    tgPostId: string;
+  }): Promise<string> {
+    return new Promise((resolve, reject) => {
+      try {
+        const posts = getItem<SavedPost[]>();
+
+        addItem<SavedPost>({
+          id: posts.length,
+          author: currentUser.login,
+          text,
+          title,
+          imageUrl,
+          publishedTo: {
+            telegram: [isTgChecked, ids.tgPostId],
+            facebook: [isFbChecked, ids.fbPostId],
+          },
+          time: createTimeStamp(),
+        });
+        resolve('Успішно збережено у базі даних!');
+      } catch (error) {
+        reject('Error! Не вдалося зберегти в базу даних!');
+      }
+    });
+  }
+
+  function handleLogIn() {
+    fbApi
+      .logIn()
+      .then((response) => {
+        if (typeof response !== 'string') {
+          setAccessTokens(response);
+          setIsUserConnected(true);
+        }
+      })
+      .catch((err: string) =>
+        createNotification({ message: err, variant: 'error' })
+      );
+  }
+
+  function handleLogOut() {
+    fbApi
+      .logOut()
+      .then(() => {
+        const tokens = {
+          userToken: undefined,
+          pageToken: undefined,
+        };
+        setAccessTokens(tokens);
+        setIsUserConnected(false);
+      })
+      .catch((err) => console.error(err));
+  }
+
+  function submitHandler(): void {
+    if (!confirm('Опублікувати цей пост?')) {
+      return;
+    }
+
+    async function startPublish(): Promise<{
+      fbPostId: string;
+      tgPostId: string;
+    }> {
+      let fbPostId = '';
+      let tgPostId = '';
+
+      setIsPublishing(true);
+
+      if (isTgChecked) {
+        await createNews(title, text, imageUrl)
+          .then((response) => {
+            createNotification({
+              message: 'Успішно опубліковано в Telegram!',
+              variant: 'success',
+            });
+            tgPostId = response;
+          })
+          .catch((error: string) => {
+            createNotification({ message: error, variant: 'error' });
+          });
+      }
+
+      if (isFbChecked && fbApi.isTokensNotUndefined(accessTokens)) {
+        await fbApi
+          .publishToFacebook(title, text, accessTokens, imageUrl)
+          .then((response) => {
+            createNotification({
+              message: 'Успішно опубліковано на Facebook!',
+              variant: 'success',
+            });
+            fbPostId = response;
+          })
+          .catch((err: string) => {
+            console.error('Error! Failed to post to Facebook. ', err);
+            createNotification({
+              message: err,
+              variant: 'error',
+            });
+          });
+      }
+
+      return { fbPostId, tgPostId };
+    }
+
+    startPublish()
+      .then((ids) => saveToLocalStorage(ids))
+      .then((result) => {
+        createNotification({ message: result, variant: 'success' });
+      })
+      .finally(() => resetForm())
+      .catch((err) => console.error(err));
+  }
 
   return (
     <Box
@@ -250,14 +242,14 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
             value={title}
             onChange={(e) => setTitle(e.target.value.toUpperCase())}
             id='standard-basic'
-            label='Title'
+            label='ТЕМА'
             variant='standard'
           />
 
           <TextareaAutosize
             aria-label='minimum height'
             minRows={6}
-            placeholder='News text...'
+            placeholder='Текст посту...'
             onChange={(e) => setText(e.target.value)}
             style={{ width: '100%' }}
           />
@@ -266,14 +258,12 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             id='standard-basic'
-            label='Image URL'
+            label='URL зображення (image address)'
             variant='standard'
           />
 
           <Box my={2}>
-            <Typography variant='subtitle1'>
-              Where should we publish?
-            </Typography>
+            <Typography variant='subtitle1'>Де опублікувати?</Typography>
             <FormGroup>
               <FormControlLabel
                 control={<Checkbox />}
@@ -283,39 +273,71 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
                   setIsTgChecked(checked);
                 }}
               />
-              <Box>
-                <FormControlLabel
-                  control={<Checkbox />}
-                  label='Facebook'
-                  checked={isFbChecked}
-                  onChange={(e: SyntheticEvent, checked: boolean) => {
-                    setIsFbChecked(checked);
-                  }}
-                  disabled={!accessTokens.userToken || !isUserConnected}
-                />
+              <Box display={'flex'} flexDirection={'column'}>
+                <Box>
+                  <FormControlLabel
+                    control={<Checkbox />}
+                    label='Facebook'
+                    checked={isFbChecked}
+                    onChange={(e: SyntheticEvent, checked: boolean) => {
+                      setIsFbChecked(checked);
+                    }}
+                    disabled={!accessTokens.userToken || !isUserConnected}
+                  />
+                  {accessTokens.userToken || isUserConnected ? (
+                    <Button
+                      size='small'
+                      variant='outlined'
+                      color='error'
+                      type='submit'
+                      onClick={handleLogOut}
+                    >
+                      disconnect
+                    </Button>
+                  ) : (
+                    <Button
+                      size='small'
+                      variant='outlined'
+                      color='success'
+                      type='submit'
+                      onClick={handleLogIn}
+                    >
+                      connect
+                    </Button>
+                  )}
+                </Box>
                 {!isUserConnected && !accessTokens.userToken ? (
-                  <Typography variant='subtitle2'>
-                    You are not connected to Facebook. Please log in to your
-                    Facebook admin account.
-                  </Typography>
+                  <Alert variant='standard' severity='warning'>
+                    Ви не підключені до Facebook. Будь ласка, увійдіть в свій
+                    обліковий запис адміністратора на Facebook.
+                  </Alert>
                 ) : (
-                  <Typography variant='subtitle2'>Connected</Typography>
+                  <Alert variant='standard' severity='success'>
+                    Підключено до Facebook API
+                  </Alert>
                 )}
               </Box>
             </FormGroup>
           </Box>
-          <Button type='submit' onClick={logInToFB}>
-            log in
-          </Button>
-          <Button type='submit' onClick={logOutOfFB}>
-            log out
-          </Button>
-          <Button type='submit' onClick={() => navigate('/')}>
-            GO BACK
-          </Button>
-          <Button type='submit' onClick={submitHandler}>
-            CREATE
-          </Button>
+
+          <Box display={'flex'} justifyContent={'space-around'}>
+            <Button
+              color='warning'
+              variant='contained'
+              type='submit'
+              onClick={() => navigate('/')}
+            >
+              НАЗАД
+            </Button>
+            <Button
+              color='primary'
+              variant='contained'
+              type='submit'
+              onClick={submitHandler}
+            >
+              СТВОРИТИ
+            </Button>
+          </Box>
         </Box>
       )}
     </Box>

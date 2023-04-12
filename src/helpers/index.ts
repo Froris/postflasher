@@ -1,50 +1,72 @@
 import { useEffect, useState } from 'react';
 import { SavedPost } from '../pages/Root';
+import { useSnackbar } from 'notistack';
 
-export function useLocalStorage() {
-  const [posts, setPosts] = useState<SavedPost[]>(
-    JSON.parse(localStorage.getItem('posts') || '[]') as SavedPost[]
-  );
+//export function useLocalStorage() {
+//  const [posts, setPosts] = useState<SavedPost[]>(
+//    JSON.parse(localStorage.getItem('posts') || '[]') as SavedPost[]
+//  );
 
-  function addPost(newPost: SavedPost) {
-    const updatedPosts = [...posts, newPost];
-    setPosts(updatedPosts);
-    localStorage.setItem('posts', JSON.stringify(updatedPosts));
+//  function addPost(newPost: SavedPost) {
+//    const updatedPosts = [...posts, newPost];
+//    setPosts(updatedPosts);
+//    localStorage.setItem('posts', JSON.stringify(updatedPosts));
+//  }
+
+//  useEffect(() => {
+//    const handleStorageChange = () => {
+//      const newPosts = JSON.parse(
+//        localStorage.getItem('posts') || '[]'
+//      ) as SavedPost[];
+//      setPosts(newPosts);
+//    };
+
+//    window.addEventListener('storage', handleStorageChange);
+
+//    return () => {
+//      window.removeEventListener('storage', handleStorageChange);
+//    };
+//  }, []);
+
+//  return [posts, addPost] as [SavedPost[], (value: SavedPost) => void];
+//}
+
+export function useLocalStorage(key: string) {
+  function addItem<T>(item: T) {
+    localStorage.setItem(key, JSON.stringify(item));
   }
 
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const newPosts = JSON.parse(
-        localStorage.getItem('posts') || '[]'
-      ) as SavedPost[];
-      setPosts(newPosts);
-    };
+  function removeItem() {
+    localStorage.removeItem(key);
+  }
 
-    window.addEventListener('storage', handleStorageChange);
+  function getItem<T>(): T {
+    const items = JSON.parse(localStorage.getItem(key) || '[]') as T;
+    return items;
+  }
 
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-
-  return [posts, addPost] as [SavedPost[], (value: SavedPost) => void];
+  return [addItem, removeItem, getItem] as [
+    <T>(value: T) => void,
+    () => void,
+    <T>() => T
+  ];
 }
 
 export function useLogin() {
+  const [addItem, removeItem, getItem] = useLocalStorage('user');
+
   const [currentUser, setCurrentUser] = useState<{ login: string }>(
-    JSON.parse(localStorage.getItem('user') || `{"login": ""}`) as {
-      login: string;
-    }
+    getItem<{ login: string }>()
   );
 
   function logIn(user: { login: string }) {
     setCurrentUser(user);
-    localStorage.setItem('user', JSON.stringify(user));
+    addItem<{ login: string }>(user);
   }
 
   function logOut() {
     setCurrentUser({ login: '' });
-    localStorage.setItem('user', JSON.stringify({ login: '' }));
+    removeItem();
   }
 
   return [currentUser, logIn, logOut] as [
@@ -71,4 +93,22 @@ export function createTimeStamp() {
   };
 
   return `${hours}:${minutes} ${day}.${month}.${year}`;
+}
+
+type Notification = {
+  message: string;
+  variant: 'error' | 'warning' | 'success';
+};
+
+export function useNotification() {
+  const { enqueueSnackbar } = useSnackbar();
+
+  function createNotification({ message, variant }: Notification) {
+    enqueueSnackbar(message, {
+      variant,
+      anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+    });
+  }
+
+  return createNotification;
 }

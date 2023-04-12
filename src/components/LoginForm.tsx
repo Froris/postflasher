@@ -7,7 +7,6 @@ import { useLogin } from '../helpers';
 
 export const LoginForm = () => {
   const { allowedUsers } = useOutletContext<OutletProps>();
-
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -27,7 +26,7 @@ export const LoginForm = () => {
       logIn({ login: result.login });
       navigate('/', { replace: true });
     } else {
-      enqueueSnackbar('Invalid username or password', {
+      enqueueSnackbar("Неправильне ім'я користувача або пароль.", {
         variant: 'error',
         anchorOrigin: { horizontal: 'center', vertical: 'top' },
       });

@@ -4,9 +4,17 @@ import { SavedPost } from '../pages/Root';
 import { Box, Typography } from '@mui/material';
 import { useLocalStorage } from '../helpers';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { useEffect, useState } from 'react';
 
 export default function Table() {
-  const [posts] = useLocalStorage();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [addItem, removeItem, getItem] = useLocalStorage('posts');
+  const [posts, setPosts] = useState<SavedPost[]>([]);
+
+  useEffect(() => {
+    const fetchedPosts = getItem<SavedPost[]>();
+    setPosts([...fetchedPosts]);
+  }, []);
 
   const columns: GridColDef[] = [
     {
@@ -28,7 +36,7 @@ export default function Table() {
     },
     {
       field: 'idauthor',
-      headerName: 'AUTHOR',
+      headerName: 'АВТОР',
       flex: 1,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { author } = row;
@@ -47,12 +55,12 @@ export default function Table() {
     },
     {
       field: 'title',
-      headerName: 'TITLE',
+      headerName: 'ТЕМА',
       flex: 2,
     },
     {
       field: 'imageUrl',
-      headerName: 'IMAGE',
+      headerName: 'ЗОБРАЖЕННЯ',
       flex: 3,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { imageUrl } = row;
@@ -66,21 +74,21 @@ export default function Table() {
     },
     {
       field: 'time',
-      headerName: 'DATE',
+      headerName: 'ДАТА',
       flex: 1,
     },
     {
       field: 'publishedTo',
-      headerName: 'PUBLISHED',
+      headerName: 'ОПУБЛІКОВАНО ДО',
       flex: 2,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const {
-          publishedTo: { isPublishedToFB, isPublishedToTG },
+          publishedTo: { telegram, facebook },
         } = row;
 
         return (
           <Box display='flex' justifyContent='center'>
-            {isPublishedToTG && (
+            {telegram[0] && (
               <Box display={'flex'} gap={1} alignItems={'flex-end'}>
                 <TelegramIcon color='primary' />
                 <Typography color='primary' variant='subtitle2'>
@@ -88,7 +96,7 @@ export default function Table() {
                 </Typography>
               </Box>
             )}
-            {isPublishedToFB && (
+            {facebook[0] && (
               <Box display={'flex'} gap={1} alignItems={'flex-end'}>
                 <FacebookIcon color='primary' />
                 <Typography color='primary' variant='subtitle2'>
@@ -120,7 +128,7 @@ export default function Table() {
           columns={columns}
         />
       ) : (
-        <Typography>No posts :c</Typography>
+        <Typography>Поки що немає жодного посту...</Typography>
       )}
     </Box>
   );

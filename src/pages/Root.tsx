@@ -2,7 +2,7 @@ import { CssBaseline } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import { SnackbarProvider } from 'notistack';
 import { useInitFbSDK } from '../api/connectToFB';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export interface Post {
   title: string;
@@ -14,8 +14,8 @@ export interface SavedPost extends Post {
   id: number;
   author: string;
   publishedTo: {
-    isPublishedToTG: boolean;
-    isPublishedToFB: boolean;
+    telegram: [boolean, string];
+    facebook: [boolean, string];
   };
   time: string;
 }
@@ -52,6 +52,11 @@ export const Root = () => {
     ],
     []
   );
+
+  useEffect(() => {
+    // Чистим локальное хранилище после закрытия приложения
+    return localStorage.clear();
+  }, []);
 
   return (
     <>
