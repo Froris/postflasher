@@ -206,7 +206,7 @@ interface IPublishApi {
 // Общий класс, использующий классы-модули для публикации и делегирующий их методы
 export default class FacebookApi {
   mode: 'group' | 'page';
-  appId: string = import.meta.env.VITE_FB_APP_TEST_ID as string;
+  appId: string = import.meta.env.VITE_FB_APP_ID as string;
   fbPublishApi: IPublishApi;
 
   constructor(mode: 'group' | 'page', fbPublishApi: FacebookGroupsApi) {

@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { SavedPost } from '../pages/Root';
+import { useState } from 'react';
 import { useSnackbar } from 'notistack';
 
 //export function useLocalStorage() {

@@ -25,7 +25,7 @@ export const useInitFbSDK = () => {
   window.fbAsyncInit = function () {
     window.FB.init({
       // Find your App ID on https://developers.facebook.com/apps/
-      appId: import.meta.env.VITE_FB_APP_TEST_ID as string,
+      appId: import.meta.env.VITE_FB_APP_ID as string,
       autoLogAppEvents: true,
       xfbml: true,
       version: 'v16.0',
