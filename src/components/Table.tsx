@@ -1,10 +1,13 @@
 import TelegramIcon from '@mui/icons-material/Telegram';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import { SavedPost } from '../pages/Root';
-import { Box, Typography } from '@mui/material';
+import { Box, Link, Typography } from '@mui/material';
 import { useLocalStorage } from '../helpers';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
+
+const tgChatId = (import.meta.env.VITE_TG_CHAT_ID as string).split('@')[1];
+const fbGroupId = import.meta.env.VITE_FB_GROUP_ID as string;
 
 export default function Table() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -66,9 +69,20 @@ export default function Table() {
         const { imageUrl } = row;
 
         return (
-          <Box p={1} height={'200px'} display='flex' justifyContent='center'>
-            <img src={imageUrl} alt='post' />
-          </Box>
+          <>
+            {imageUrl ? (
+              <Box
+                p={1}
+                height={'200px'}
+                display='flex'
+                justifyContent='center'
+              >
+                <img src={imageUrl} alt='post' />
+              </Box>
+            ) : (
+              <Typography>Без зображення</Typography>
+            )}
+          </>
         );
       },
     },
@@ -86,22 +100,35 @@ export default function Table() {
           publishedTo: { telegram, facebook },
         } = row;
 
+        const [tgIsPublished, tgMessageId] = telegram;
+        const [fbIsPublished, fbMessageId] = facebook;
+
         return (
-          <Box display='flex' justifyContent='center'>
-            {telegram[0] && (
+          <Box display='flex' justifyContent='center' flexDirection={'column'}>
+            {tgIsPublished && (
               <Box display={'flex'} gap={1} alignItems={'flex-end'}>
                 <TelegramIcon color='primary' />
-                <Typography color='primary' variant='subtitle2'>
-                  Telegram
-                </Typography>
+                <Link
+                  underline={'none'}
+                  href={`https://t.me/${tgChatId}/${tgMessageId}`}
+                >
+                  <Typography color='primary' variant='subtitle2'>
+                    Telegram
+                  </Typography>
+                </Link>
               </Box>
             )}
-            {facebook[0] && (
+            {fbIsPublished && (
               <Box display={'flex'} gap={1} alignItems={'flex-end'}>
                 <FacebookIcon color='primary' />
-                <Typography color='primary' variant='subtitle2'>
-                  Facebook
-                </Typography>
+                <Link
+                  underline={'none'}
+                  href={`https://www.facebook.com/groups/${fbGroupId}/permalink/${fbMessageId}/`}
+                >
+                  <Typography color='primary' variant='subtitle2'>
+                    Facebook
+                  </Typography>
+                </Link>
               </Box>
             )}
           </Box>

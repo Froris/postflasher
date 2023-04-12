@@ -55,7 +55,7 @@ export const Root = () => {
 
   useEffect(() => {
     // Чистим локальное хранилище после закрытия приложения
-    return localStorage.clear();
+    //return localStorage.clear();
   }, []);
 
   return (

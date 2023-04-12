@@ -106,18 +106,21 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
       try {
         const posts = getItem<SavedPost[]>();
 
-        addItem<SavedPost>({
-          id: posts.length,
-          author: currentUser.login,
-          text,
-          title,
-          imageUrl,
-          publishedTo: {
-            telegram: [isTgChecked, ids.tgPostId],
-            facebook: [isFbChecked, ids.fbPostId],
+        addItem<SavedPost[]>([
+          ...posts,
+          {
+            id: posts.length,
+            author: currentUser.login,
+            text,
+            title,
+            imageUrl,
+            publishedTo: {
+              telegram: [isTgChecked, ids.tgPostId],
+              facebook: [isFbChecked, ids.fbPostId],
+            },
+            time: createTimeStamp(),
           },
-          time: createTimeStamp(),
-        });
+        ]);
         resolve('Успішно збережено у базі даних!');
       } catch (error) {
         reject('Error! Не вдалося зберегти в базу даних!');

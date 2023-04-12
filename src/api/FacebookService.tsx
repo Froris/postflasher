@@ -52,9 +52,8 @@ export class FacebookPagesApi {
           access_token: accessToken,
         },
         function (response: FbApiResponse | FbApiErrorResponse) {
-          console.log('FB response: ', response);
           if (FacebookApi.isErrorResponse(response)) {
-            console.log(response.error);
+            console.error(response.error);
             reject(
               `Error! Не вдалося створити пост. ${response.error.message}`
             );
@@ -82,7 +81,6 @@ export class FacebookPagesApi {
           access_token: accessToken,
         },
         function (response: FbApiPhotoUploadResponse | FbApiErrorResponse) {
-          console.log('Response from uploadPhoto: ', response);
           if (FacebookApi.isErrorResponse(response)) {
             console.log(response.error);
             reject(
@@ -111,7 +109,6 @@ export class FacebookPagesApi {
           access_token: accessToken,
         },
         function (response: FbApiPhotoUploadResponse | FbApiErrorResponse) {
-          console.log('Response from updatePost: ', response);
           if (FacebookApi.isErrorResponse(response)) {
             console.log(response.error);
             reject(`Error! Failed to update a post. ${response.error.message}`);
@@ -181,7 +178,6 @@ export class FacebookGroupsApi {
             access_token: accessToken,
           },
           function (response: FbApiResponse | FbApiErrorResponse) {
-            console.log('FB response: ', response);
             if (FacebookApi.isErrorResponse(response)) {
               console.log(response.error);
               reject(
@@ -210,7 +206,7 @@ interface IPublishApi {
 // Общий класс, использующий классы-модули для публикации и делегирующий их методы
 export default class FacebookApi {
   mode: 'group' | 'page';
-  appId: string = import.meta.env.VITE_FB_APP_ID as string;
+  appId: string = import.meta.env.VITE_FB_APP_TEST_ID as string;
   fbPublishApi: IPublishApi;
 
   constructor(mode: 'group' | 'page', fbPublishApi: FacebookGroupsApi) {
@@ -238,7 +234,6 @@ export default class FacebookApi {
   logOut(): Promise<void> {
     return new Promise((resolve) => {
       window.FB.logout(() => {
-        console.log(window.FB);
         resolve();
       });
     });
