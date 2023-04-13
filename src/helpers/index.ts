@@ -1,35 +1,6 @@
 import { useState } from 'react';
 import { useSnackbar } from 'notistack';
 
-//export function useLocalStorage() {
-//  const [posts, setPosts] = useState<SavedPost[]>(
-//    JSON.parse(localStorage.getItem('posts') || '[]') as SavedPost[]
-//  );
-
-//  function addPost(newPost: SavedPost) {
-//    const updatedPosts = [...posts, newPost];
-//    setPosts(updatedPosts);
-//    localStorage.setItem('posts', JSON.stringify(updatedPosts));
-//  }
-
-//  useEffect(() => {
-//    const handleStorageChange = () => {
-//      const newPosts = JSON.parse(
-//        localStorage.getItem('posts') || '[]'
-//      ) as SavedPost[];
-//      setPosts(newPosts);
-//    };
-
-//    window.addEventListener('storage', handleStorageChange);
-
-//    return () => {
-//      window.removeEventListener('storage', handleStorageChange);
-//    };
-//  }, []);
-
-//  return [posts, addPost] as [SavedPost[], (value: SavedPost) => void];
-//}
-
 export function useLocalStorage(key: string) {
   function addItem<T>(item: T) {
     localStorage.setItem(key, JSON.stringify(item));
@@ -105,6 +76,7 @@ export function useNotification() {
   function createNotification({ message, variant }: Notification) {
     enqueueSnackbar(message, {
       variant,
+      autoHideDuration: 8000,
       anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
     });
   }

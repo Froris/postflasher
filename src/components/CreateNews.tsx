@@ -209,13 +209,20 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
       return { fbPostId, tgPostId };
     }
 
-    startPublish()
-      .then((ids) => saveToLocalStorage(ids))
-      .then((result) => {
-        createNotification({ message: result, variant: 'success' });
-      })
-      .finally(() => resetForm())
-      .catch((err) => console.error(err));
+    if (text.length > 0 && title.length > 0) {
+      startPublish()
+        .then((ids) => saveToLocalStorage(ids))
+        .then((result) => {
+          createNotification({ message: result, variant: 'success' });
+        })
+        .finally(() => resetForm())
+        .catch((err) => console.error(err));
+    } else {
+      createNotification({
+        message: 'Ви не можете створити порожній пост.',
+        variant: 'warning',
+      });
+    }
   }
 
   return (
