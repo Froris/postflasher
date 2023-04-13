@@ -24,6 +24,18 @@ export default function TopBar() {
         <Button color='inherit' onClick={logOutHandler}>
           Log out
         </Button>
+        <Button
+          sx={{
+            marginLeft: '20px',
+          }}
+          color='inherit'
+          onClick={() => {
+            localStorage.clear();
+            navigate('/login');
+          }}
+        >
+          clear storage
+        </Button>
       </Toolbar>
     </AppBar>
   );

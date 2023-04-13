@@ -243,7 +243,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
         <Box display={'flex'} flexDirection={'column'} gap={2} width={'100%'}>
           <TextField
             value={title}
-            onChange={(e) => setTitle(e.target.value.toUpperCase())}
+            onChange={(e) => setTitle(e.target.value.trim())}
             id='standard-basic'
             label='ТЕМА'
             variant='standard'
@@ -253,13 +253,13 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
             aria-label='minimum height'
             minRows={6}
             placeholder='Текст посту...'
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => setText(e.target.value.trim())}
             style={{ width: '100%' }}
           />
 
           <TextField
             value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
+            onChange={(e) => setImageUrl(e.target.value.trim())}
             id='standard-basic'
             label='URL зображення (image address)'
             variant='standard'

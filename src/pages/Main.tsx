@@ -22,7 +22,7 @@ function Main() {
       <Box display={'flex'} flexGrow={1}>
         <Box
           sx={{
-            minWidth: '300px',
+            minWidth: '250px',
             borderRight: '1px solid rgba(0, 0, 0, 0.12)',
           }}
         >

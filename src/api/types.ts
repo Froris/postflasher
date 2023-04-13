@@ -10,6 +10,7 @@ export interface AuthResponse {
 
 export interface FbApiResponse {
   id: string;
+  post_id: string;
 }
 
 export interface FbApiPhotoUploadResponse {

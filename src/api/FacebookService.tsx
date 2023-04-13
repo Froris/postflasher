@@ -164,7 +164,7 @@ export class FacebookGroupsApi {
               );
               return;
             } else {
-              resolve(response.id.split('_')[1]);
+              resolve(response.post_id.split('_')[1]);
             }
           }
         );

@@ -21,6 +21,7 @@ export interface SavedPost extends Post {
 }
 
 export interface OutletProps {
+  preRenderedPosts: SavedPost[];
   isFbSDKInitialized: boolean;
   allowedUsers: Array<{ login: string; password: string }>;
   currentUser: string;

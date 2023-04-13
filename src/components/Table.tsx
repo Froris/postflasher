@@ -5,6 +5,7 @@ import { Box, Link, Typography } from '@mui/material';
 import { useLocalStorage } from '../helpers';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
+import { preRenderedPosts } from '../helpers/mockData';
 
 const tgChatId = (import.meta.env.VITE_TG_CHAT_ID as string).split('@')[1];
 const fbGroupId = import.meta.env.VITE_FB_GROUP_ID as string;
@@ -12,11 +13,15 @@ const fbGroupId = import.meta.env.VITE_FB_GROUP_ID as string;
 export default function Table() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addItem, removeItem, getItem] = useLocalStorage('posts');
-  const [posts, setPosts] = useState<SavedPost[]>([]);
+  const [posts, setPosts] = useState<SavedPost[]>(preRenderedPosts);
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 3,
+    page: 0,
+  });
 
   useEffect(() => {
     const fetchedPosts = getItem<SavedPost[]>();
-    setPosts([...fetchedPosts]);
+    setPosts([...preRenderedPosts, ...fetchedPosts]);
   }, []);
 
   const columns: GridColDef[] = [
@@ -93,7 +98,7 @@ export default function Table() {
     },
     {
       field: 'publishedTo',
-      headerName: 'ОПУБЛІКОВАНО ДО',
+      headerName: 'ОПУБЛІКОВАНО',
       flex: 2,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const {
@@ -138,9 +143,12 @@ export default function Table() {
   ];
 
   return (
-    <Box width={'100%'} height={'80vh'}>
+    <Box maxWidth={'100%'} height={'800px'}>
       {posts && posts.length > 0 ? (
         <DataGrid
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[3, 10, 15]}
           sx={{
             borderColor: '#92c9ff',
             '& .MuiDataGrid-columnHeaders': {
