@@ -29,8 +29,8 @@ export default function Table() {
       )
       .then(() => {
         const updatedPosts = posts.filter((post) => post.id !== postId);
-        setPosts(updatedPosts);
-        addItem(posts);
+        setPosts([...updatedPosts]);
+        addItem(updatedPosts);
       })
       .catch((err: string) =>
         createNotification({ message: err, variant: 'error' })
@@ -39,6 +39,7 @@ export default function Table() {
 
   useEffect(() => {
     const fetchedPosts = getItem<SavedPost[]>();
+    console.log('fetched posts', fetchedPosts);
     setPosts([...fetchedPosts]);
   }, []);
 
