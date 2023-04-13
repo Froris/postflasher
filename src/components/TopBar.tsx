@@ -21,10 +21,17 @@ export default function TopBar() {
         <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
           PostFlasher
         </Typography>
-        <Button color='inherit' onClick={logOutHandler}>
+        <Button
+          size='medium'
+          color='inherit'
+          variant='outlined'
+          onClick={logOutHandler}
+        >
           Log out
         </Button>
         <Button
+          size='medium'
+          variant='outlined'
           sx={{
             marginLeft: '20px',
           }}

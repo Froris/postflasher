@@ -39,7 +39,6 @@ export default function Table() {
 
   useEffect(() => {
     const fetchedPosts = getItem<SavedPost[]>();
-    console.log('fetched posts', fetchedPosts);
     setPosts([...fetchedPosts]);
   }, []);
 
@@ -167,7 +166,7 @@ export default function Table() {
         const { id, publishedTo } = row;
         return (
           <IconButton onClick={() => handleDelete(id, publishedTo.telegram[1])}>
-            <DeleteForeverIcon />
+            <DeleteForeverIcon color='error' />
           </IconButton>
         );
       },
