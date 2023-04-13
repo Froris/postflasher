@@ -16,31 +16,32 @@ export default function Table() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addItem, removeItem, getItem] = useLocalStorage('posts');
   const createNotification = useNotification();
-  const [posts, setPosts] = useState<SavedPost[]>([]);
+  const [posts, setPosts] = useState<SavedPost[]>(getItem<SavedPost[]>());
   const [paginationModel, setPaginationModel] = useState({
-    pageSize: 3,
+    pageSize: 5,
     page: 0,
   });
 
-  function handleDelete(postId: number, messageId: number) {
-    deleteMessage(messageId)
-      .then((response) =>
-        createNotification({ message: response, variant: 'success' })
-      )
-      .then(() => {
-        const updatedPosts = posts.filter((post) => post.id !== postId);
-        setPosts([...updatedPosts]);
-        addItem(updatedPosts);
-      })
-      .catch((err: string) =>
-        createNotification({ message: err, variant: 'error' })
-      );
-  }
+  function handleDelete(
+    postId: number,
+    publishedTo: { telegram: [boolean, number]; facebook: [boolean, string] }
+  ) {
+    const { telegram } = publishedTo;
 
-  useEffect(() => {
-    const fetchedPosts = getItem<SavedPost[]>();
-    setPosts([...fetchedPosts]);
-  }, []);
+    if (telegram[0]) {
+      deleteMessage(telegram[1])
+        .then((response) =>
+          createNotification({ message: response, variant: 'success' })
+        )
+        .catch((err: string) =>
+          createNotification({ message: err, variant: 'error' })
+        );
+    }
+
+    const updatedPosts = posts.filter((post) => post.id !== postId);
+    setPosts([...updatedPosts]);
+    addItem(updatedPosts);
+  }
 
   const columns: GridColDef[] = [
     {
@@ -167,7 +168,7 @@ export default function Table() {
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { id, publishedTo } = row;
         return (
-          <IconButton onClick={() => handleDelete(id, publishedTo.telegram[1])}>
+          <IconButton onClick={() => handleDelete(id, publishedTo)}>
             <DeleteForeverIcon color='error' />
           </IconButton>
         );
@@ -176,12 +177,12 @@ export default function Table() {
   ];
 
   return (
-    <Box width={'100%'} height={'800px'}>
+    <Box width={'100%'} height={'800px'} sx={{ backgroundColor: 'white' }}>
       {preRenderedPosts || (posts && posts.length > 0) ? (
         <DataGrid
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[3, 10, 15]}
+          pageSizeOptions={[5, 10, 15]}
           sx={{
             borderColor: '#92c9ff',
             '& .MuiDataGrid-columnHeaders': {

@@ -2,7 +2,8 @@ import { CssBaseline } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import { SnackbarProvider } from 'notistack';
 import { useInitFbSDK } from '../api/connectToFB';
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
+import { AdminsList, adminsList } from '../helpers/mockData';
 
 export interface Post {
   title: string;
@@ -23,36 +24,17 @@ export interface SavedPost extends Post {
 export interface OutletProps {
   preRenderedPosts: SavedPost[];
   isFbSDKInitialized: boolean;
-  allowedUsers: Array<{ login: string; password: string }>;
+  allowedUsers: AdminsList;
   currentUser: string;
   setCurrentUser: (value: string) => void;
 }
 
 export const Root = () => {
+  // For login form
   const [currentUser, setCurrentUser] = useState('');
+  const allowedUsers = adminsList;
   // Initializes the Facebook SDK
   const isFbSDKInitialized = useInitFbSDK();
-  const allowedUsers = useMemo(
-    (): Array<{ login: string; password: string }> => [
-      {
-        login: 'admin@admin',
-        password: 'admin',
-      },
-      {
-        login: 'random@mail',
-        password: 'admin',
-      },
-      {
-        login: 'fox@mail',
-        password: 'admin',
-      },
-      {
-        login: 'joe@mail',
-        password: 'admin',
-      },
-    ],
-    []
-  );
 
   return (
     <>

@@ -9,15 +9,36 @@ export const Sidebar = () => {
     <>
       <Box mx={2} mt={2}>
         <Typography variant='h5'>Admins</Typography>
-        <Divider />
       </Box>
 
       <List>
         {allowedUsers.map((user) => (
           <ListItem key={user.login}>
-            <Typography color={'#1976d2'} variant='h6' component={'span'}>
-              {user.login}
-            </Typography>
+            <Box display={'flex'} flexDirection={'column'} width={'100%'}>
+              {user.login !== 'admin@admin' && (
+                <Box display={'flex'} flexWrap={'wrap'}>
+                  <Typography variant='subtitle1' component={'span'}>
+                    {user.lastName}
+                  </Typography>
+                  <Typography mx={1} variant='subtitle1' component={'span'}>
+                    {user.firstName}
+                  </Typography>
+                  <Typography flex={1} variant='subtitle1' component={'span'}>
+                    {user.midName}
+                  </Typography>
+                </Box>
+              )}
+
+              <Typography
+                color={'#1976d2'}
+                variant='subtitle1'
+                component={'span'}
+              >
+                {user.login}
+              </Typography>
+
+              <Divider />
+            </Box>
           </ListItem>
         ))}
       </List>

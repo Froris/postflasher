@@ -1,5 +1,48 @@
 import { SavedPost } from '../pages/Root';
 
+export type AdminsList = Array<{
+  login: string;
+  password: string;
+  firstName?: string;
+  midName?: string;
+  lastName?: string;
+}>;
+
+export const adminsList: AdminsList = [
+  {
+    login: 'admin@admin',
+    password: 'admin',
+  },
+  {
+    login: 'random@mail',
+    password: 'random',
+    firstName: 'Олександр',
+    midName: 'Ігорович',
+    lastName: 'Коноваленко',
+  },
+  {
+    login: 'fox@mail',
+    password: 'fox',
+    firstName: 'Юлія',
+    midName: 'Володимирівна',
+    lastName: 'Григоренко',
+  },
+  {
+    login: 'joe@mail',
+    password: 'joe',
+    firstName: 'Анастасія',
+    midName: 'Миколаївна',
+    lastName: 'Лисенко',
+  },
+  {
+    login: 'fluff@mail',
+    password: 'fluff',
+    firstName: 'Олег',
+    midName: 'Вікторович',
+    lastName: 'Ковальчук',
+  },
+];
+
 export const preRenderedPosts: SavedPost[] = [
   {
     id: 0,
