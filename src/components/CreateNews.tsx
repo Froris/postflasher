@@ -246,7 +246,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
         <Box display={'flex'} flexDirection={'column'} gap={2} width={'100%'}>
           <TextField
             value={title}
-            onChange={(e) => setTitle(e.target.value.trim())}
+            onChange={(e) => setTitle(e.target.value)}
             id='standard-basic'
             label='ТЕМА'
             variant='standard'
@@ -256,7 +256,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
             aria-label='minimum height'
             minRows={6}
             placeholder='Текст посту...'
-            onChange={(e) => setText(e.target.value.trim())}
+            onChange={(e) => setText(e.target.value)}
             style={{ width: '100%' }}
           />
 
