@@ -21,7 +21,7 @@ export default function Table() {
 
   useEffect(() => {
     const fetchedPosts = getItem<SavedPost[]>();
-    setPosts([...preRenderedPosts, ...fetchedPosts]);
+    setPosts([...fetchedPosts]);
   }, []);
 
   const columns: GridColDef[] = [
@@ -99,7 +99,7 @@ export default function Table() {
     {
       field: 'publishedTo',
       headerName: 'ОПУБЛІКОВАНО',
-      flex: 2,
+      flex: 1,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const {
           publishedTo: { telegram, facebook },
@@ -144,7 +144,7 @@ export default function Table() {
 
   return (
     <Box maxWidth={'100%'} height={'800px'}>
-      {posts && posts.length > 0 ? (
+      {preRenderedPosts || (posts && posts.length > 0) ? (
         <DataGrid
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
@@ -159,7 +159,7 @@ export default function Table() {
             },
           }}
           getRowHeight={() => 'auto'}
-          rows={posts}
+          rows={[...preRenderedPosts, ...posts]}
           columns={columns}
         />
       ) : (
