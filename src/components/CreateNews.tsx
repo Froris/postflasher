@@ -18,6 +18,7 @@ import { createTimeStamp, useLocalStorage, useLogin } from '../helpers';
 import { useNavigate } from 'react-router-dom';
 import FacebookApi, { FacebookGroupsApi } from '../api/FacebookService';
 import { SavedPost } from '../pages/Root';
+import { preRenderedPosts } from '../helpers/mockData';
 
 interface CreateNewsProps {
   isFbSDKInitialized: boolean;
@@ -104,12 +105,14 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
   }): Promise<string> {
     return new Promise((resolve, reject) => {
       try {
+        // Чтобы учитывалась и длина мок постов
         const posts = getItem<SavedPost[]>();
+        const postsLength = [...new Set(preRenderedPosts.concat(posts))];
 
         addItem<SavedPost[]>([
           ...posts,
           {
-            id: posts.length,
+            id: postsLength.length,
             author: currentUser.login,
             text,
             title,

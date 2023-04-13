@@ -13,7 +13,7 @@ const fbGroupId = import.meta.env.VITE_FB_GROUP_ID as string;
 export default function Table() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addItem, removeItem, getItem] = useLocalStorage('posts');
-  const [posts, setPosts] = useState<SavedPost[]>(preRenderedPosts);
+  const [posts, setPosts] = useState<SavedPost[]>([]);
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 3,
     page: 0,
@@ -159,7 +159,7 @@ export default function Table() {
             },
           }}
           getRowHeight={() => 'auto'}
-          rows={[...preRenderedPosts, ...posts]}
+          rows={[...new Set(preRenderedPosts.concat(posts))]}
           columns={columns}
         />
       ) : (
