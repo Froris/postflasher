@@ -28,7 +28,7 @@ function Main() {
         >
           <Sidebar />
         </Box>
-        <Box m={2} width={'100%'}>
+        <Box m={2} width={'100%'} sx={{ overflowX: 'auto' }}>
           <Box my={2}>
             <Button variant='contained' onClick={() => navigate('/create')}>
               СТВОРИТИ ПОСТ

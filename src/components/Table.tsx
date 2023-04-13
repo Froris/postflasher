@@ -46,6 +46,7 @@ export default function Table() {
     {
       field: 'id',
       headerName: 'ID',
+      width: 20,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { id } = row;
 
@@ -63,7 +64,7 @@ export default function Table() {
     {
       field: 'idauthor',
       headerName: 'АВТОР',
-      flex: 1,
+      width: 200,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { author } = row;
 
@@ -82,25 +83,26 @@ export default function Table() {
     {
       field: 'title',
       headerName: 'ТЕМА',
-      flex: 2,
+      width: 320,
     },
     {
       field: 'imageUrl',
       headerName: 'ЗОБРАЖЕННЯ',
-      flex: 3,
+      width: 400,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { imageUrl } = row;
 
         return (
           <>
             {imageUrl ? (
-              <Box
-                p={1}
-                height={'200px'}
-                display='flex'
-                justifyContent='center'
-              >
-                <img src={imageUrl} alt='post' />
+              <Box py={1} maxWidth={'320px'}>
+                <img
+                  style={{
+                    width: '100%',
+                  }}
+                  src={imageUrl}
+                  alt='post'
+                />
               </Box>
             ) : (
               <Typography>Без зображення</Typography>
@@ -111,13 +113,13 @@ export default function Table() {
     },
     {
       field: 'time',
-      headerName: 'ДАТА',
-      flex: 1,
+      headerName: 'ДАТА ПУБЛІКАЦІЇ',
+      width: 250,
     },
     {
       field: 'publishedTo',
       headerName: 'ОПУБЛІКОВАНО',
-      flex: 1,
+      width: 200,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const {
           publishedTo: { telegram, facebook },
@@ -160,8 +162,8 @@ export default function Table() {
     },
     {
       field: 'delete',
-      headerName: 'ВИДАЛИТИ',
-      flex: 1,
+      headerName: '',
+      width: 100,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { id, publishedTo } = row;
         return (
@@ -174,7 +176,7 @@ export default function Table() {
   ];
 
   return (
-    <Box maxWidth={'100%'} height={'800px'}>
+    <Box width={'100%'} height={'800px'}>
       {preRenderedPosts || (posts && posts.length > 0) ? (
         <DataGrid
           paginationModel={paginationModel}
