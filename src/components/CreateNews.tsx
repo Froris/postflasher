@@ -101,7 +101,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
 
   async function saveToLocalStorage(ids: {
     fbPostId: string;
-    tgPostId: string;
+    tgPostId: number;
   }): Promise<string> {
     return new Promise((resolve, reject) => {
       try {
@@ -166,10 +166,10 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
 
     async function startPublish(): Promise<{
       fbPostId: string;
-      tgPostId: string;
+      tgPostId: number;
     }> {
       let fbPostId = '';
-      let tgPostId = '';
+      let tgPostId = 0;
 
       setIsPublishing(true);
 
@@ -180,7 +180,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
               message: 'Успішно опубліковано в Telegram!',
               variant: 'success',
             });
-            tgPostId = response;
+            tgPostId = response as number;
           })
           .catch((error: string) => {
             createNotification({ message: error, variant: 'error' });

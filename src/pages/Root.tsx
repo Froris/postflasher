@@ -14,7 +14,7 @@ export interface SavedPost extends Post {
   id: number;
   author: string;
   publishedTo: {
-    telegram: [boolean, string];
+    telegram: [boolean, number];
     facebook: [boolean, string];
   };
   time: string;

@@ -8,10 +8,7 @@ export const preRenderedPosts: SavedPost[] = [
     title: 'Майстер-клас для школярів',
     imageUrl: 'https://kp.ua/img/article/6385/66_news_big-v1639334384.webp',
     publishedTo: {
-      telegram: [
-        true,
-        'AgACAgQAAx0Ead9WJwADJmQ3xYOq3qhiFiX8_fuTBnVVueEHAAICrzEbEbT8U686Z74SBgOLAQADAgADcwADLwQ',
-      ],
+      telegram: [true, 9999],
       facebook: [true, '243668514742506'],
     },
     time: '12:04 13.04.2023',
@@ -24,10 +21,7 @@ export const preRenderedPosts: SavedPost[] = [
     imageUrl:
       'https://proforientator.ru/publications/articles/New%20Folder/prezent2.jpg',
     publishedTo: {
-      telegram: [
-        true,
-        'AgACAgQAAx0Ead9WJwADJ2Q3xsR6a9pGXVY79Mx-nDdAOlFLAALCqjEbV7fEUc1CBHkIGayDAQADAgADcwADLwQ',
-      ],
+      telegram: [true, 99990],
       facebook: [true, '243670734742284'],
     },
     time: '12:09 13.04.2023',

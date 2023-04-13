@@ -7,22 +7,40 @@ const token = import.meta.env.VITE_BOT_TOKEN as string;
 const bot = new Telegraf(token);
 
 const sendMessageAsync = (chatId: string, message: string) => {
-  return new Promise<string>((resolve, reject) => {
+  return new Promise<string | number>((resolve, reject) => {
     bot.telegram
       .sendMessage(chatId, message)
       .then((response) => {
-        resolve(response.message_id.toString());
+        resolve(response.message_id);
       })
       .catch((error) => reject(error));
   });
 };
 
 const sendPhotoAsync = (chatId: string, photo: string, options: ExtraPhoto) => {
-  return new Promise<string>((resolve, reject) => {
+  return new Promise<string | number>((resolve, reject) => {
     bot.telegram
       .sendPhoto(chatId, photo, options)
-      .then((response) => resolve(response.photo[0].file_id))
+      .then((response) => {
+        resolve(response.message_id);
+      })
       .catch((error) => reject(error));
+  });
+};
+
+export const deleteMessage = async (messageId: number): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    bot.telegram
+      .deleteMessage('@testnewscaph', messageId)
+      .then((response: boolean) => {
+        if (response) {
+          resolve('Пост успішно видалено в Telegram!');
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        reject(`Не вдалося видалити пост у Telegram!`);
+      });
   });
 };
 
@@ -30,7 +48,7 @@ export const createNews = async (
   title: string,
   text: string,
   image?: string
-): Promise<string> => {
+): Promise<string | number> => {
   return new Promise((resolve, reject) => {
     if (image) {
       sendPhotoAsync('@testnewscaph', image, {

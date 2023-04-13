@@ -1,11 +1,13 @@
 import TelegramIcon from '@mui/icons-material/Telegram';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import { SavedPost } from '../pages/Root';
-import { Box, Link, Typography } from '@mui/material';
-import { useLocalStorage } from '../helpers';
+import { Box, IconButton, Link, Typography } from '@mui/material';
+import { useLocalStorage, useNotification } from '../helpers';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { preRenderedPosts } from '../helpers/mockData';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { deleteMessage } from '../api/TelegramService';
 
 const tgChatId = (import.meta.env.VITE_TG_CHAT_ID as string).split('@')[1];
 const fbGroupId = import.meta.env.VITE_FB_GROUP_ID as string;
@@ -13,11 +15,27 @@ const fbGroupId = import.meta.env.VITE_FB_GROUP_ID as string;
 export default function Table() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addItem, removeItem, getItem] = useLocalStorage('posts');
+  const createNotification = useNotification();
   const [posts, setPosts] = useState<SavedPost[]>([]);
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 3,
     page: 0,
   });
+
+  function handleDelete(postId: number, messageId: number) {
+    deleteMessage(messageId)
+      .then((response) =>
+        createNotification({ message: response, variant: 'success' })
+      )
+      .then(() => {
+        const updatedPosts = posts.filter((post) => post.id !== postId);
+        setPosts(updatedPosts);
+        addItem(posts);
+      })
+      .catch((err: string) =>
+        createNotification({ message: err, variant: 'error' })
+      );
+  }
 
   useEffect(() => {
     const fetchedPosts = getItem<SavedPost[]>();
@@ -137,6 +155,19 @@ export default function Table() {
               </Box>
             )}
           </Box>
+        );
+      },
+    },
+    {
+      field: 'delete',
+      headerName: 'ВИДАЛИТИ',
+      flex: 1,
+      renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
+        const { id, publishedTo } = row;
+        return (
+          <IconButton onClick={() => handleDelete(id, publishedTo.telegram[1])}>
+            <DeleteForeverIcon />
+          </IconButton>
         );
       },
     },
