@@ -2,8 +2,9 @@ import { Telegraf } from 'telegraf';
 // eslint-disable-next-line import/no-unresolved
 import { ExtraPhoto } from 'telegraf/typings/telegram-types';
 
+// тут достём из переменных окружения (.env) токен, который мы получили при создания бота
 const token = import.meta.env.VITE_BOT_TOKEN as string;
-
+// инициализируем интерфейс бота, через который мы будем отдавать ему команды и присылать пост
 const bot = new Telegraf(token);
 
 const sendMessageAsync = (chatId: string, message: string) => {
@@ -44,7 +45,7 @@ export const deleteMessage = async (messageId: number): Promise<string> => {
   });
 };
 
-export const createNews = async (
+export const publishToTelegram = async (
   title: string,
   text: string,
   image?: string

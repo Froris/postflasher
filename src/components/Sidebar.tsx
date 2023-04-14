@@ -2,6 +2,8 @@ import { useOutletContext } from 'react-router-dom';
 import { OutletProps } from '../pages/Root';
 import { Box, Divider, List, ListItem, Typography } from '@mui/material';
 
+// тут просто выводим список наших админов
+
 export const Sidebar = () => {
   const { allowedUsers } = useOutletContext<OutletProps>();
 

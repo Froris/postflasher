@@ -12,7 +12,7 @@ import {
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useNotification } from '../helpers';
 import { ColorRing } from 'react-loader-spinner';
-import { createNews } from '../api/TelegramService';
+import { publishToTelegram } from '../api/TelegramService';
 import { createTimeStamp, useLocalStorage, useLogin } from '../helpers';
 import { useNavigate } from 'react-router-dom';
 import FacebookApi from '../api/FacebookService';
@@ -154,7 +154,7 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
 
       // проверяем стоит ли отметка публикации в Телеграм. Если да, код в if{} запустится
       if (isTgChecked) {
-        await createNews(title, text, imageUrl)
+        await publishToTelegram(title, text, imageUrl)
           .then((response) => {
             createNotification({
               message: 'Успішно опубліковано в Telegram!',

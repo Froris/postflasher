@@ -16,6 +16,8 @@ export const LoginForm = () => {
   const [password, setPassword] = useState('');
 
   function handleLogin(): void {
+    // Список юзеров заранее создан. Тут проходит проверка на соответствие тому,
+    // что ввёл юзер в форме логина с нашим списком юзеров
     const result = allowedUsers.find((user) => {
       if (user.login === login && user.password === password) {
         return user;
