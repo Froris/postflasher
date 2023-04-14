@@ -217,9 +217,6 @@ interface IPublishApi {
 export default class FacebookApi {
   mode: 'group' | 'page';
   isFbSDKInitialized: boolean;
-  userId: string | null;
-  userToken: string | null;
-  pageToken: string | null;
   private facebookGroupApi: IPublishApi = new FacebookGroupsApi(); // класс-модуль
 
   // тут мы указываем, что мы ждём при инициализации FacebookApi
@@ -227,18 +224,21 @@ export default class FacebookApi {
   constructor(mode: 'group' | 'page', isFbSDKInitialized: boolean) {
     this.mode = mode;
     this.isFbSDKInitialized = isFbSDKInitialized;
-    this.userId = null;
-    this.userToken = null;
-    this.pageToken = null;
   }
 
-  logIn(): Promise<string> {
+  logIn(): Promise<{
+    connected: string;
+    userId: string;
+    userToken: string;
+  }> {
     return new Promise((resolve, reject) => {
       window.FB.login((response: StatusResponse) => {
         if (response && response.authResponse) {
-          this.userToken = response.authResponse.accessToken;
-          this.userId = response.authResponse.userID;
-          resolve('Successfully logged in!');
+          resolve({
+            connected: response.status,
+            userId: response.authResponse.userID,
+            userToken: response.authResponse.accessToken,
+          });
         } else {
           reject('Error! Log in failed!');
         }
@@ -266,15 +266,10 @@ export default class FacebookApi {
         try {
           window.FB.getLoginStatus((response: StatusResponse) => {
             if (response && response.authResponse) {
-              this.userToken = response.authResponse.accessToken;
-              this.userId = response.authResponse.userID;
-
-              console.log(response.authResponse.accessToken);
-
               resolve({
                 connected: true,
-                userId: this.userId,
-                userToken: this.userToken,
+                userId: response.authResponse.userID,
+                userToken: response.authResponse.accessToken,
               });
             } else {
               // ...иначе указываем что он не залогинен.
@@ -289,25 +284,23 @@ export default class FacebookApi {
     });
   }
   // Тут фетчим токен доступа для работы с Page (поскольку работаем с группой - не используем)
-  getPageAccessToken(): Promise<string> {
+  getPageAccessToken(
+    pageToken: string,
+    userId: string
+  ): Promise<{ pageToken: string }> {
     return new Promise((resolve, reject) => {
-      if (this.userToken && this.userId !== null) {
-        try {
-          window.FB.api(
-            `/${this.userId}/accounts?access_token=${this.userToken}`,
-            (response: FbApiPageAccessResponse) => {
-              if (response && response.data) {
-                this.pageToken = response.data[0].access_token;
-                resolve('Page token successfully fetched!');
-              }
+      try {
+        window.FB.api(
+          `/${userId}/accounts?access_token=${pageToken}`,
+          (response: FbApiPageAccessResponse) => {
+            if (response && response.data) {
+              resolve({ pageToken: response.data[0].access_token });
             }
-          );
-        } catch (error) {
-          console.log(error);
-          reject('Page access token fetch failed!');
-        }
-      } else {
-        reject("User is not logged in! Can't fetch Page access token!");
+          }
+        );
+      } catch (error) {
+        console.log(error);
+        reject('Page access token fetch failed!');
       }
     });
   }
