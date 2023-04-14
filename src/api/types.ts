@@ -50,8 +50,3 @@ export interface FbApiPageAccessResponse {
     }
   ];
 }
-
-export type Tokens = {
-  userToken: string;
-  pageToken: string;
-};

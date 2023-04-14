@@ -1,4 +1,6 @@
 import { useState } from 'react';
+// Код с офф сайта Фейсбук для инициализации интерфейса,
+// который даёт нам методы для работы с апишкой
 
 // Injects the Facebook SDK into the page
 const injectFbSDKScript = () => {
@@ -25,7 +27,7 @@ export const useInitFbSDK = () => {
   window.fbAsyncInit = function () {
     window.FB.init({
       // Find your App ID on https://developers.facebook.com/apps/
-      appId: import.meta.env.VITE_FB_APP_ID as string,
+      appId: import.meta.env.VITE_FB_TEST_APP_ID as string,
       autoLogAppEvents: true,
       xfbml: true,
       version: 'v16.0',

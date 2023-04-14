@@ -43,11 +43,14 @@ export default function Table() {
     addItem(updatedPosts);
   }
 
+  // Настройка колонок для таблицы
   const columns: GridColDef[] = [
     {
       field: 'id',
       headerName: 'ID',
       width: 20,
+      // Если нужно наделить ячейку логикой то с помощью renderCell мы
+      // можем описать свою логику
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { id } = row;
 
@@ -179,6 +182,7 @@ export default function Table() {
   return (
     <Box width={'100%'} height={'800px'} sx={{ backgroundColor: 'white' }}>
       {preRenderedPosts || (posts && posts.length > 0) ? (
+        // Сама таблица
         <DataGrid
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
@@ -193,6 +197,8 @@ export default function Table() {
             },
           }}
           getRowHeight={() => 'auto'}
+          // preRenderedPosts те самые два поста. Тут мы просто соединяем их
+          // с созданными вручную и передаём в таблицу. Таким образом мы разделяем тестовые посты от настоящих.
           rows={[...new Set(preRenderedPosts.concat(posts))]}
           columns={columns}
         />

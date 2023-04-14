@@ -6,10 +6,12 @@ import { useEffect } from 'react';
 import { useLogin } from '../helpers';
 
 export const CreatePost = () => {
+  // переменная с состоянием того, подключены ли мы к апи ФБ (именно наш сайт а не юзер)
   const { isFbSDKInitialized } = useOutletContext<OutletProps>();
   const [currentUser] = useLogin();
   const navigate = useNavigate();
 
+  // если юзер не залогинен - перенаправляем на страницу логина
   useEffect(() => {
     if (!currentUser.login) {
       navigate('/login', { replace: true });

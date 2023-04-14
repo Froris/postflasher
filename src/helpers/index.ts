@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useSnackbar } from 'notistack';
 
+// В этомй файле функции, которые мы переиспользуем в разных местах
+
+// функция для работы с локальным хранилищем
 export function useLocalStorage(key: string) {
   function addItem<T>(item: T) {
     localStorage.setItem(key, JSON.stringify(item));
@@ -22,6 +25,7 @@ export function useLocalStorage(key: string) {
   ];
 }
 
+// функция для логина/логаута на сайте (именно на нашем сайте)
 export function useLogin() {
   const [addItem, removeItem, getItem] = useLocalStorage('user');
 
@@ -46,6 +50,7 @@ export function useLogin() {
   ];
 }
 
+// функция, которая создаёт дату публикации поста
 export function createTimeStamp() {
   const date = new Date();
   const {
@@ -70,6 +75,7 @@ type Notification = {
   variant: 'error' | 'warning' | 'success';
 };
 
+// функция для создания уведомлений
 export function useNotification() {
   const { enqueueSnackbar } = useSnackbar();
 
