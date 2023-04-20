@@ -30,8 +30,6 @@ export const FBConnectPopUp = memo(function FBConnectPopUp({
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popover' : undefined;
 
-  console.log('Pop re-rendered!');
-
   return (
     <>
       <Popover

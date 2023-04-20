@@ -1,4 +1,3 @@
-import { useLogin } from '../helpers';
 import { NavigateFunction } from 'react-router-dom';
 import { Box } from '@mui/material';
 import AppButton from './styled/StyledButtons';
@@ -8,9 +7,6 @@ export const ClearStorageBtn = ({
 }: {
   navigate: NavigateFunction;
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [currentUser, logIn, logOut] = useLogin();
-
   return (
     <Box my={2}>
       <AppButton

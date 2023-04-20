@@ -1,11 +1,5 @@
 import { Box, FormControlLabel, FormGroup, Typography } from '@mui/material';
-import {
-  SyntheticEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { SyntheticEvent, useCallback, useEffect, useState } from 'react';
 import { useNotification } from '../helpers';
 import { publishToTelegram } from '../api/TelegramService';
 import { createTimeStamp, useLocalStorage, useLogin } from '../helpers';
