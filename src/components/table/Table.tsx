@@ -59,7 +59,7 @@ export const Table = ({ posts, onDeleteItem }: TableProps) => {
     {
       field: 'information',
       headerName: 'ТЕМА / ДЕ ОПУБЛІКОВАНО',
-      width: 600,
+      width: 500,
       sortable: false,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const {
@@ -159,7 +159,7 @@ export const Table = ({ posts, onDeleteItem }: TableProps) => {
     {
       field: 'time',
       headerName: 'СОРТУВАТИ ЗА ДАТОЮ',
-      width: 250,
+      width: 220,
       sortingOrder: ['asc', 'desc'],
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { time } = row;
@@ -180,7 +180,7 @@ export const Table = ({ posts, onDeleteItem }: TableProps) => {
     {
       field: 'author',
       headerName: 'АВТОР',
-      width: 200,
+      width: 250,
       sortable: false,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { author } = row;
@@ -221,7 +221,7 @@ export const Table = ({ posts, onDeleteItem }: TableProps) => {
   return (
     <Box
       width={'100%'}
-      height={'80%'}
+      height={'100%'}
       sx={{ position: 'relative', backgroundColor: 'white' }}
     >
       {preRenderedPosts || (posts && posts.length > 0) ? (

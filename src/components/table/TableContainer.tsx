@@ -45,16 +45,20 @@ export const TableContainer = ({
       width={'100%'}
       overflow={'hidden'}
       display={'flex'}
-      flexDirection={'column'}
       justifyContent={'center'}
       alignItems={'center'}
     >
-      <Box width={'100%'} display={'flex'} justifyContent={'space-between'}>
-        <MainCreateButton postsLength={2 + posts.length} navigate={navigate} />
-        <ClearStorageBtn navigate={navigate} />
-      </Box>
+      <Box width={'100%'} height={'85%'} maxWidth={'1400px'}>
+        <Box width={'100%'} display={'flex'} justifyContent={'space-between'}>
+          <MainCreateButton
+            postsLength={2 + posts.length}
+            navigate={navigate}
+          />
+          <ClearStorageBtn navigate={navigate} />
+        </Box>
 
-      <Table posts={posts} onDeleteItem={handleDeleteTableItem} />
+        <Table posts={posts} onDeleteItem={handleDeleteTableItem} />
+      </Box>
     </Box>
   );
 };

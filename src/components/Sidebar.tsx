@@ -29,6 +29,7 @@ export const Sidebar = () => {
         boxSizing: 'border-box',
         backgroundColor: '#673D87',
         minWidth: '260px',
+        maxWidth: '300px',
         borderRight: '1px solid rgba(0, 0, 0, 0.12)',
       }}
     >
