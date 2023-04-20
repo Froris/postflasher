@@ -1,9 +1,12 @@
-import { Box, TextField, Button, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { useState } from 'react';
 import { OutletProps } from '../pages/Root';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useLogin } from '../helpers';
+import logo from '../assets/logo.png';
+import AppTextField from './styled/StyledTextField';
+import AppButton from './styled/StyledButtons';
 
 export const LoginForm = () => {
   const { allowedUsers } = useOutletContext<OutletProps>();
@@ -39,48 +42,56 @@ export const LoginForm = () => {
     <Box
       display={'flex'}
       flexDirection={'column'}
-      alignItems={'center'}
-      gap={4}
-      width={'400px'}
-      height={'400px'}
+      gap={2}
+      width={'437px'}
+      height={'427px'}
       p={4}
       sx={{
-        backgroundColor: 'white',
-        border: '1px solid #1976d2',
-        borderRadius: '10px',
+        boxSizing: 'border-box',
+        backgroundColor: '#9649FC',
+        border: '2px solid #673D87',
+        borderRadius: '30px',
       }}
     >
-      <Typography>
-        PostFlasher
-        <span style={{ marginLeft: '10px', color: '#1976d2' }}>Log in</span>
-      </Typography>
-      <TextField
-        type='text'
-        fullWidth
-        value={login}
-        onChange={(e) => setLogin(e.target.value.trim())}
-        label='Login'
-        variant='standard'
-      />
-
-      <TextField
-        type='password'
-        fullWidth
-        value={password}
-        label='Password'
-        variant='standard'
-        onChange={(e) => setPassword(e.target.value.trim())}
-      />
-
-      <Box maxWidth={'120px'}>
-        <Button
+      <Box width={'80px'} height={'80px'} mx={'auto'} mb={'40px'}>
+        <img src={logo} alt='logo' />
+      </Box>
+      <Box
+        width={'100%'}
+        display={'flex'}
+        flexDirection={'column'}
+        alignItems={'center'}
+        rowGap={2}
+      >
+        <AppTextField
+          type='text'
           fullWidth
-          variant='contained'
-          type='submit'
-          onClick={handleLogin}
-        >
-          log in
-        </Button>
+          value={login}
+          onChange={(e) => setLogin(e.target.value.trim())}
+          label='Login'
+          variant='standard'
+        />
+
+        <AppTextField
+          type='password'
+          fullWidth
+          value={password}
+          label='Password'
+          variant='standard'
+          onChange={(e) => setPassword(e.target.value.trim())}
+        />
+
+        <Box mb={'80px'} mt={'30px'} maxWidth={'120px'}>
+          <AppButton
+            className='FormButton-logIn'
+            fullWidth
+            variant='contained'
+            type='submit'
+            onClick={handleLogin}
+          >
+            log in
+          </AppButton>
+        </Box>
       </Box>
     </Box>
   );

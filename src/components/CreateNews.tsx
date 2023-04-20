@@ -1,23 +1,24 @@
+import { Box, FormControlLabel, FormGroup, Typography } from '@mui/material';
 import {
-  Alert,
-  Box,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-  TextField,
-  TextareaAutosize,
-  Typography,
-} from '@mui/material';
-import { SyntheticEvent, useEffect, useState } from 'react';
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useNotification } from '../helpers';
-import { ColorRing } from 'react-loader-spinner';
 import { publishToTelegram } from '../api/TelegramService';
 import { createTimeStamp, useLocalStorage, useLogin } from '../helpers';
 import { useNavigate } from 'react-router-dom';
 import FacebookApi from '../api/FacebookService';
 import { SavedPost } from '../pages/Root';
 import { preRenderedPosts } from '../helpers/mockData';
+import { LoadingSpinner } from './LoadingSpinner';
+import AppTextField from './styled/StyledTextField';
+import AppButton from './styled/StyledButtons';
+import AppCheckbox from './styled/StyledCheckbox';
+import { FBConnectPopUp } from './FBConnectPopUp';
+import imageForm from '../assets/Rectangle 4.png';
 
 interface CreateNewsProps {
   isFbSDKInitialized: boolean;
@@ -116,26 +117,28 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
   }
 
   // функция, которая вызывает окно авторизации в ФБ
-  function handleLogIn() {
+  const handleLogIn = useCallback(() => {
     fbApi
       .logIn()
-      .then(() => {
+      .then((response) => {
+        setUserToken(response.userToken);
         setIsUserConnected(true);
       })
       .catch((err: string) =>
         createNotification({ message: err, variant: 'error' })
       );
-  }
+  }, []);
 
   // Функция, которая разлогинивает с ФБ
-  function handleLogOut() {
+  const handleLogOut = useCallback(() => {
     fbApi
       .logOut()
       .then(() => {
+        setUserToken(null);
         setIsUserConnected(false);
       })
       .catch((err) => console.error(err));
-  }
+  }, []);
 
   // Главная функция страницы. Тут вся логика, описанная выше, начинает работать.
   function submitHandler(): void {
@@ -213,68 +216,101 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
   return (
     <Box
       display={'flex'}
-      justifyContent={'center'}
-      alignItems={'center'}
-      width={'600px'}
-      height={'600px'}
-      p={3}
+      width={'50vw'}
+      height={'550px'}
+      overflow={'hidden'}
       sx={{
         backgroundColor: 'white',
-        border: '1px solid black',
-        borderRadius: '10px',
+        borderRadius: '30px',
       }}
     >
       {isPublishing ? (
-        <ColorRing
-          visible={isPublishing}
-          height='80'
-          width='80'
-          ariaLabel='blocks-loading'
-          wrapperStyle={{}}
-          wrapperClass='blocks-wrapper'
-          colors={['#03C988', '#B8FFF9', '#85F4FF', '#42C2FF', '#1976d2']}
-        />
+        <LoadingSpinner isLoading={isPublishing} />
       ) : (
-        <Box display={'flex'} flexDirection={'column'} gap={2} width={'100%'}>
-          <TextField
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            id='standard-basic'
-            label='ТЕМА'
-            variant='standard'
-          />
-
-          <TextareaAutosize
-            aria-label='minimum height'
-            minRows={6}
-            placeholder='Текст посту...'
-            onChange={(e) => setText(e.target.value)}
-            style={{ width: '100%' }}
-          />
-
-          <TextField
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value.trim())}
-            id='standard-basic'
-            label='URL зображення (image address)'
-            variant='standard'
-          />
-
-          <Box my={2}>
-            <Typography variant='subtitle1'>Де опублікувати?</Typography>
-            <FormGroup>
-              <FormControlLabel
-                control={<Checkbox />}
-                label='Telegram'
-                checked={isTgChecked}
-                onChange={(e: SyntheticEvent, checked: boolean) => {
-                  setIsTgChecked(checked);
-                }}
+        <Box display={'flex'} width={'100%'}>
+          <Box>
+            <img
+              width={'100%'}
+              height={'100%'}
+              style={{ objectFit: 'cover' }}
+              src={imageForm}
+              alt=''
+            />
+          </Box>
+          <Box
+            flexGrow={1}
+            py={2}
+            px={5}
+            display={'flex'}
+            flexDirection={'column'}
+            justifyContent={'space-around'}
+            sx={{
+              backgroundColor: '#9649FC',
+            }}
+          >
+            <Box
+              component={'section'}
+              display={'flex'}
+              flexDirection={'column'}
+              gap={3}
+            >
+              <AppTextField
+                className='titleInput'
+                size='medium'
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                id='standard-basic'
+                label='Напишіть тему'
+                variant='standard'
               />
-              <Box display={'flex'} flexDirection={'column'}>
-                <Box>
+
+              <AppTextField
+                className='textInput'
+                size='small'
+                aria-label='minimum height'
+                variant='outlined'
+                multiline
+                minRows={5}
+                maxRows={5}
+                label='Додати текст...'
+                onChange={(e) => setText(e.target.value)}
+              />
+            </Box>
+
+            <Box component={'section'} my={2} width={'100%'}>
+              <AppTextField
+                fullWidth
+                className='imageInput'
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value.trim())}
+                id='standard-basic'
+                label='URL зображення (image address)'
+                variant='filled'
+              />
+
+              <Typography sx={{ color: 'white' }} mt={2} variant='subtitle1'>
+                Де опублікувати?
+              </Typography>
+
+              <FormGroup>
+                <Box display={'flex'} gap={3} alignItems={'center'}>
                   <FormControlLabel
-                    control={<Checkbox />}
+                    sx={{
+                      color: 'white',
+                    }}
+                    control={<AppCheckbox />}
+                    label='Telegram'
+                    checked={isTgChecked}
+                    onChange={(e: SyntheticEvent, checked: boolean) => {
+                      setIsTgChecked(checked);
+                    }}
+                  />
+
+                  <FormControlLabel
+                    sx={{
+                      color: 'white',
+                    }}
+                    control={<AppCheckbox />}
                     label='Facebook'
                     checked={isFbChecked}
                     onChange={(e: SyntheticEvent, checked: boolean) => {
@@ -282,59 +318,39 @@ export const CreateNews = ({ isFbSDKInitialized }: CreateNewsProps) => {
                     }}
                     disabled={!isUserConnected}
                   />
-                  {isUserConnected ? (
-                    <Button
-                      size='small'
-                      variant='outlined'
-                      color='error'
-                      type='submit'
-                      onClick={handleLogOut}
-                    >
-                      disconnect
-                    </Button>
-                  ) : (
-                    <Button
-                      size='small'
-                      variant='outlined'
-                      color='success'
-                      type='submit'
-                      onClick={handleLogIn}
-                    >
-                      connect
-                    </Button>
-                  )}
-                </Box>
-                {!isUserConnected ? (
-                  <Alert variant='standard' severity='warning'>
-                    Ви не підключені до Facebook. Будь ласка, увійдіть в свій
-                    обліковий запис адміністратора на Facebook.
-                  </Alert>
-                ) : (
-                  <Alert variant='standard' severity='success'>
-                    Підключено до Facebook API
-                  </Alert>
-                )}
-              </Box>
-            </FormGroup>
-          </Box>
 
-          <Box display={'flex'} justifyContent={'space-around'}>
-            <Button
-              color='warning'
-              variant='contained'
-              type='submit'
-              onClick={() => navigate('/')}
-            >
-              НАЗАД
-            </Button>
-            <Button
-              color='primary'
-              variant='contained'
-              type='submit'
-              onClick={submitHandler}
-            >
-              СТВОРИТИ
-            </Button>
+                  <FBConnectPopUp
+                    isUserConnected={isUserConnected}
+                    onLogIn={handleLogIn}
+                    onLogOut={handleLogOut}
+                  />
+                </Box>
+              </FormGroup>
+
+              <Box
+                mt={2}
+                display={'flex'}
+                justifyContent={'flex-start'}
+                gap={2}
+              >
+                <AppButton
+                  className='FormButton-back'
+                  variant='outlined'
+                  type='submit'
+                  onClick={() => navigate('/')}
+                >
+                  НАЗАД
+                </AppButton>
+                <AppButton
+                  className='FormButton-create'
+                  variant='contained'
+                  type='submit'
+                  onClick={submitHandler}
+                >
+                  СТВОРИТИ
+                </AppButton>
+              </Box>
+            </Box>
           </Box>
         </Box>
       )}

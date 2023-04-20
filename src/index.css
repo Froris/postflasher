@@ -16,3 +16,9 @@ body,
   margin: 0;
   padding: 0;
 }
+
+.MuiList-root,
+.MuiList-root .MuiListItem-root {
+  margin: 0;
+  padding: 0;
+}
