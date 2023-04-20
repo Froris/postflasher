@@ -59,7 +59,7 @@ export const Table = ({ posts, onDeleteItem }: TableProps) => {
     {
       field: 'information',
       headerName: 'ТЕМА / ДЕ ОПУБЛІКОВАНО',
-      width: 500,
+      width: 390,
       sortable: false,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const {
@@ -72,7 +72,7 @@ export const Table = ({ posts, onDeleteItem }: TableProps) => {
 
         return (
           <Box
-            ml={'12px'}
+            mx={'12px'}
             display={'flex'}
             flexDirection={'column'}
             justifyContent={'center'}
@@ -83,6 +83,8 @@ export const Table = ({ posts, onDeleteItem }: TableProps) => {
               variant='h5'
               component={'p'}
               sx={{
+                whiteSpace: 'normal',
+                width: '100%',
                 color: 'white',
                 fontWeight: 'bold',
               }}
@@ -159,7 +161,7 @@ export const Table = ({ posts, onDeleteItem }: TableProps) => {
     {
       field: 'time',
       headerName: 'СОРТУВАТИ ЗА ДАТОЮ',
-      width: 220,
+      width: 230,
       sortingOrder: ['asc', 'desc'],
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { time } = row;
@@ -180,7 +182,7 @@ export const Table = ({ posts, onDeleteItem }: TableProps) => {
     {
       field: 'author',
       headerName: 'АВТОР',
-      width: 250,
+      width: 180,
       sortable: false,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { author } = row;
@@ -200,8 +202,8 @@ export const Table = ({ posts, onDeleteItem }: TableProps) => {
 
     {
       field: 'delete',
-      headerName: 'ВИДАЛИТИ ПОСТ',
-      width: 150,
+      headerName: 'ВИДАЛИТИ',
+      width: 110,
       sortable: false,
       renderCell: ({ row }: GridRenderCellParams<SavedPost>) => {
         const { id, publishedTo } = row;

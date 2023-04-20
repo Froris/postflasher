@@ -48,7 +48,7 @@ export const TableContainer = ({
       justifyContent={'center'}
       alignItems={'center'}
     >
-      <Box width={'100%'} height={'85%'} maxWidth={'1400px'}>
+      <Box width={'100%'} height={'85%'} maxWidth={'1300px'}>
         <Box width={'100%'} display={'flex'} justifyContent={'space-between'}>
           <MainCreateButton
             postsLength={2 + posts.length}
